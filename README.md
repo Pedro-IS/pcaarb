@@ -14,6 +14,7 @@ This README is a concise, English-language orientation for anyone evaluating the
 | [docs/01-product-vision-and-roadmap.md](docs/01-product-vision-and-roadmap.md) | Original product vision, target market, and phased roadmap |
 | [docs/02-tech-stack-proposal.md](docs/02-tech-stack-proposal.md) | Original tech stack proposal, pre-implementation |
 | [docs/03-build-vs-buy-payments-fiscal.md](docs/03-build-vs-buy-payments-fiscal.md) | Build-vs-buy analysis for payments and Brazilian fiscal integration |
+| [docs/06-competitive-analysis-and-action-plan.md](docs/06-competitive-analysis-and-action-plan.md) | Comparison against Square/Shopify POS/Lightspeed, gaps found, and what's next |
 | [PRECOS-E-CUSTOS.md](PRECOS-E-CUSTOS.md) | Subscription pricing catalog and cost structure (Portuguese) |
 | [docs/04-termos-de-uso-RASCUNHO.md](docs/04-termos-de-uso-RASCUNHO.md) / [docs/05-politica-de-privacidade-RASCUNHO.md](docs/05-politica-de-privacidade-RASCUNHO.md) | Terms of Service / LGPD privacy policy — drafts, need legal review before publishing (Portuguese) |
 
@@ -25,7 +26,9 @@ Code comments and the UI (all ~25 pages in `apps/web`) are in English. What's st
 
 ## Current status
 
-The original phased roadmap (Foundation → MVP → Consolidation → Expansion) is complete, plus a follow-on gap-closing pass and the start of an "Advanced/Enterprise" phase. In business terms, the system covers: multi-tenant registration and auth with per-tenant trial/subscription billing; product/customer/supplier catalogs; point-of-sale with split payments, an offline-capable PWA mode, and full sale returns/refunds; inventory with physical counts; accounts payable/receivable with a simplified cash-basis P&L; purchase orders; multi-store consolidation; a loyalty/CRM program; sales-commission tracking; e-commerce/marketplace order import; role-based access control with per-user permission overrides on top of four base roles; programmatic API keys for third-party integration; an audit log for sensitive actions; and LGPD (Brazil's GDPR-equivalent) data export/anonymization tooling.
+The original phased roadmap (Foundation → MVP → Consolidation → Expansion) is complete, plus a follow-on gap-closing pass and the start of an "Advanced/Enterprise" phase. In business terms, the system covers: multi-tenant registration and auth with per-tenant trial/subscription billing; product/customer/supplier catalogs; point-of-sale with split payments, an offline-capable PWA mode, and full sale returns/refunds; inventory with physical counts; accounts payable/receivable with a simplified cash-basis P&L; purchase orders; multi-store consolidation; a loyalty/CRM program; sales-commission tracking; e-commerce/marketplace order import; role-based access control with per-user permission overrides on top of four base roles; programmatic API keys and signed outbound webhooks for third-party integration; an audit log for sensitive actions; and LGPD (Brazil's GDPR-equivalent) data export/anonymization tooling.
+
+See [docs/06-competitive-analysis-and-action-plan.md](docs/06-competitive-analysis-and-action-plan.md) for how this compares to Square/Shopify POS/Lightspeed and what's next.
 
 Payment processing and fiscal document (NFC-e) issuance are fully built against internal interfaces but currently run against mock/sandbox adapters — no real payment processor or fiscal provider account exists yet. That, plus a lawyer review of the draft legal documents and a production hosting deployment, are the remaining steps before real customers could be onboarded; none of them are code. See [README.pt-BR.md](README.pt-BR.md) for the full status log.
 

@@ -26,3 +26,4 @@ export * from './schemas/store.js';
 export * from './schemas/marketplace.js';
 export * from './schemas/api-key.js';
 export * from './schemas/audit-log.js';
+export * from './schemas/webhook.js';

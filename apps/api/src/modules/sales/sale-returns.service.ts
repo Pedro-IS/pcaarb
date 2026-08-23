@@ -20,6 +20,7 @@ import { CashSessionsService } from '../cash-sessions/cash-sessions.service';
 import { StockService } from '../stock/stock.service';
 import { PAYMENT_PROVIDER, type PaymentProvider } from '../payments/payment-provider.interface';
 import { FiscalService } from '../fiscal/fiscal.service';
+import { WebhooksService } from '../webhooks/webhooks.service';
 
 export interface SaleReturnWithItems extends SaleReturnRow {
   items: SaleReturnItemRow[];
@@ -34,6 +35,7 @@ export class SaleReturnsService {
     @Inject(PAYMENT_PROVIDER) private readonly paymentProvider: PaymentProvider,
     private readonly fiscalService: FiscalService,
     private readonly auditLogService: AuditLogService,
+    private readonly webhooksService: WebhooksService,
   ) {}
 
   async create(tenantId: string, userId: string, saleId: string, input: CreateSaleReturnInput): Promise<SaleReturnWithItems> {
@@ -46,7 +48,7 @@ export class SaleReturnsService {
       throw new BadRequestException('Abra o caixa antes de processar uma devolução em dinheiro');
     }
 
-    return runWithTenant(this.db, tenantId, async (tx) => {
+    const result = await runWithTenant(this.db, tenantId, async (tx) => {
       const [sale] = await tx.select().from(sales).where(and(eq(sales.id, saleId), eq(sales.tenantId, tenantId))).limit(1);
       if (!sale) {
         throw new NotFoundException('Venda não encontrada');
@@ -287,6 +289,10 @@ export class SaleReturnsService {
 
       return { ...saleReturn, items: insertedItems };
     });
+
+    void this.webhooksService.dispatchEvent(tenantId, 'sale.returned', toSaleReturnEventPayload(result));
+
+    return result;
   }
 
   async listForSale(tenantId: string, saleId: string): Promise<SaleReturnWithItems[]> {
@@ -340,4 +346,16 @@ export class SaleReturnsService {
     }
     return returns.map((r) => ({ ...r, items: itemsByReturnId.get(r.id) ?? [] }));
   }
+}
+
+function toSaleReturnEventPayload(saleReturn: SaleReturnWithItems): Record<string, unknown> {
+  return {
+    saleReturnId: saleReturn.id,
+    saleId: saleReturn.saleId,
+    status: saleReturn.status,
+    refundMethod: saleReturn.refundMethod,
+    totalRefundedCents: saleReturn.totalRefundedCents,
+    itemCount: saleReturn.items.length,
+    createdAt: saleReturn.createdAt.toISOString(),
+  };
 }

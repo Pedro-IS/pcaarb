@@ -2,17 +2,21 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Copy, Key, PackageSearch, Plug, RefreshCw, ShoppingBag } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, Key, PackageSearch, Plug, RefreshCw, ShoppingBag, Webhook } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
   ApiKey,
   CreatedApiKey,
+  CreateWebhookEndpointInput,
   MarketplaceChannel,
   MarketplaceListingWithProduct,
   MarketplaceOrder,
   Product,
   PullMarketplaceOrdersResult,
   Role,
+  WebhookDelivery,
+  WebhookEndpoint,
+  WebhookEventType,
 } from '@pcaarb/shared';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import { formatCentsToBRL } from '@/lib/currency';
@@ -40,6 +44,21 @@ const ORDER_STATUS_BADGE: Record<MarketplaceOrder['status'], { label: string; va
   needs_attention: { label: 'Needs attention', variant: 'warning' },
 };
 
+// 'webhook.test' is deliberately not a subscription option — it's the
+// special-cased event the "Send test" action fires regardless of what an
+// endpoint is subscribed to, not a real business event to opt into.
+const SUBSCRIBABLE_EVENTS: { value: WebhookEventType; label: string }[] = [
+  { value: 'sale.completed', label: 'Sale completed' },
+  { value: 'sale.returned', label: 'Sale returned' },
+];
+
+const DELIVERY_STATUS_BADGE: Record<WebhookDelivery['status'], { label: string; variant: BadgeVariant }> = {
+  pending: { label: 'Pending', variant: 'neutral' },
+  success: { label: 'Delivered', variant: 'success' },
+  failed: { label: 'Retrying', variant: 'warning' },
+  exhausted: { label: 'Failed', variant: 'danger' },
+};
+
 export default function IntegracoesPage() {
   const accessToken = useAccessToken();
   const meQuery = useCurrentUser();
@@ -53,6 +72,11 @@ export default function IntegracoesPage() {
   const [newKeyRole, setNewKeyRole] = useState<Role>('admin');
   const [newKeyExpiresAt, setNewKeyExpiresAt] = useState('');
   const [justCreatedKey, setJustCreatedKey] = useState<CreatedApiKey | null>(null);
+
+  const [newHookUrl, setNewHookUrl] = useState('');
+  const [newHookDescription, setNewHookDescription] = useState('');
+  const [newHookEvents, setNewHookEvents] = useState<WebhookEventType[]>([]);
+  const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null);
 
   const channelsQuery = useQuery({
     queryKey: ['marketplace', 'channels'],
@@ -82,6 +106,18 @@ export default function IntegracoesPage() {
     queryKey: ['api-keys'],
     queryFn: () => apiFetch<ApiKey[]>('/api-keys', { accessToken: accessToken! }),
     enabled: !!accessToken,
+  });
+
+  const webhooksQuery = useQuery({
+    queryKey: ['webhooks'],
+    queryFn: () => apiFetch<WebhookEndpoint[]>('/webhooks', { accessToken: accessToken! }),
+    enabled: !!accessToken,
+  });
+
+  const webhookDeliveriesQuery = useQuery({
+    queryKey: ['webhooks', selectedWebhookId, 'deliveries'],
+    queryFn: () => apiFetch<WebhookDelivery[]>(`/webhooks/${selectedWebhookId}/deliveries`, { accessToken: accessToken! }),
+    enabled: !!accessToken && !!selectedWebhookId,
   });
 
   function invalidateChannel() {
@@ -178,6 +214,102 @@ export default function IntegracoesPage() {
       toast.error(error instanceof ApiError ? error.message : 'Error revoking API key');
     },
   });
+
+  const createWebhookMutation = useMutation({
+    mutationFn: () =>
+      apiFetch<WebhookEndpoint>('/webhooks', {
+        method: 'POST',
+        accessToken: accessToken!,
+        body: {
+          url: newHookUrl,
+          description: newHookDescription || undefined,
+          subscribedEvents: newHookEvents,
+        } satisfies CreateWebhookEndpointInput,
+      }),
+    onSuccess: (endpoint) => {
+      setNewHookUrl('');
+      setNewHookDescription('');
+      setNewHookEvents([]);
+      setSelectedWebhookId(endpoint.id);
+      queryClient.invalidateQueries({ queryKey: ['webhooks'] });
+      toast.success('Webhook endpoint created');
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Error creating webhook endpoint');
+    },
+  });
+
+  const toggleWebhookMutation = useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      apiFetch<WebhookEndpoint>(`/webhooks/${id}`, { method: 'PATCH', accessToken: accessToken!, body: { active } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks'] });
+      toast.success('Webhook endpoint updated');
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Error updating webhook endpoint');
+    },
+  });
+
+  const rotateWebhookSecretMutation = useMutation({
+    mutationFn: (id: string) => apiFetch<WebhookEndpoint>(`/webhooks/${id}/rotate-secret`, { method: 'POST', accessToken: accessToken! }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks'] });
+      toast.success('Signing secret rotated — update it wherever you verify deliveries');
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Error rotating secret');
+    },
+  });
+
+  const deleteWebhookMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/webhooks/${id}`, { method: 'DELETE', accessToken: accessToken! }),
+    onSuccess: (_data, id) => {
+      if (selectedWebhookId === id) {
+        setSelectedWebhookId(null);
+      }
+      queryClient.invalidateQueries({ queryKey: ['webhooks'] });
+      toast.success('Webhook endpoint deleted');
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Error deleting webhook endpoint');
+    },
+  });
+
+  const testWebhookMutation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/webhooks/${id}/test`, { method: 'POST', accessToken: accessToken! }),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', id, 'deliveries'] });
+      toast.success('Test event sent — check the delivery log below');
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Error sending test event');
+    },
+  });
+
+  const retryDeliveryMutation = useMutation({
+    mutationFn: (deliveryId: string) => apiFetch(`/webhooks/deliveries/${deliveryId}/retry`, { method: 'POST', accessToken: accessToken! }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks', selectedWebhookId, 'deliveries'] });
+      toast.success('Delivery retried');
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Error retrying delivery');
+    },
+  });
+
+  function toggleHookEvent(event: WebhookEventType) {
+    setNewHookEvents((current) => (current.includes(event) ? current.filter((e) => e !== event) : [...current, event]));
+  }
+
+  async function copySecret(secret: string) {
+    try {
+      await navigator.clipboard.writeText(secret);
+      toast.success('Secret copied');
+    } catch {
+      toast.error('Could not copy automatically — select and copy manually');
+    }
+  }
 
   async function copyRawKey(rawKey: string) {
     try {
@@ -521,6 +653,203 @@ export default function IntegracoesPage() {
             </table>
           )}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div>
+          <h2 className="flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+            <Webhook className="h-4 w-4" />
+            Webhooks
+          </h2>
+          <p className="text-sm text-muted">
+            Get a signed HTTP POST whenever an event happens (a sale completes, a return is processed) instead of
+            polling the API. Each request carries an <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">X-PCAARB-Signature</code>{' '}
+            header — verify it with the endpoint&apos;s signing secret before trusting the payload.
+          </p>
+        </div>
+
+        <Card className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="flex min-w-56 flex-1 flex-col gap-1.5">
+              <label className="text-sm">Endpoint URL</label>
+              <Input placeholder="https://example.com/webhooks/pcaarb" value={newHookUrl} onChange={(e) => setNewHookUrl(e.target.value)} />
+            </div>
+            <div className="flex min-w-40 flex-1 flex-col gap-1.5">
+              <label className="text-sm">Description (optional)</label>
+              <Input placeholder="E.g.: Accounting sync" value={newHookDescription} onChange={(e) => setNewHookDescription(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm">Events</span>
+            {SUBSCRIBABLE_EVENTS.map((event) => (
+              <label key={event.value} className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" checked={newHookEvents.includes(event.value)} onChange={() => toggleHookEvent(event.value)} />
+                {event.label}
+              </label>
+            ))}
+            <Button
+              loading={createWebhookMutation.isPending}
+              disabled={!newHookUrl || newHookEvents.length === 0}
+              onClick={() => createWebhookMutation.mutate()}
+            >
+              Add endpoint
+            </Button>
+          </div>
+        </Card>
+
+        <div className="overflow-x-auto rounded-lg border border-border">
+          {!webhooksQuery.data ? (
+            <SkeletonRows rows={2} cols={4} />
+          ) : webhooksQuery.data.length === 0 ? (
+            <EmptyState icon={Webhook} message="No webhook endpoints configured yet." />
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
+                <tr>
+                  <th className="px-4 py-2 font-medium">URL</th>
+                  <th className="px-4 py-2 font-medium">Events</th>
+                  <th className="px-4 py-2 font-medium">Status</th>
+                  <th className="px-4 py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {webhooksQuery.data.map((endpoint) => (
+                  <tr
+                    key={endpoint.id}
+                    className={`cursor-pointer border-t border-border ${selectedWebhookId === endpoint.id ? 'bg-accent-soft/40' : ''}`}
+                    onClick={() => setSelectedWebhookId(endpoint.id)}
+                  >
+                    <td className="px-4 py-2">
+                      <div className="flex flex-col">
+                        <span className="break-all">{endpoint.url}</span>
+                        {endpoint.description && <span className="text-xs text-muted">{endpoint.description}</span>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {endpoint.subscribedEvents.map((event) => (
+                          <Badge key={event} variant="neutral">
+                            {event}
+                          </Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <Badge variant={endpoint.active ? 'success' : 'neutral'}>{endpoint.active ? 'Active' : 'Inactive'}</Badge>
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className="text-xs text-accent hover:underline"
+                          disabled={testWebhookMutation.isPending}
+                          onClick={() => testWebhookMutation.mutate(endpoint.id)}
+                        >
+                          Send test
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-accent hover:underline"
+                          disabled={toggleWebhookMutation.isPending}
+                          onClick={() => toggleWebhookMutation.mutate({ id: endpoint.id, active: !endpoint.active })}
+                        >
+                          {endpoint.active ? 'Deactivate' : 'Reactivate'}
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-red-600 hover:underline"
+                          disabled={deleteWebhookMutation.isPending}
+                          onClick={() => deleteWebhookMutation.mutate(endpoint.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {selectedWebhookId && webhooksQuery.data && (
+          <>
+            {(() => {
+              const endpoint = webhooksQuery.data!.find((e) => e.id === selectedWebhookId);
+              if (!endpoint) return null;
+              return (
+                <Card className="flex flex-col gap-2">
+                  <p className="flex items-center gap-1.5 text-sm font-medium">Signing secret</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 overflow-x-auto rounded-md border border-border bg-zinc-50 px-3 py-2 text-xs dark:bg-zinc-900">
+                      {endpoint.secret}
+                    </code>
+                    <Button variant="secondary" onClick={() => copySecret(endpoint.secret)}>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      loading={rotateWebhookSecretMutation.isPending}
+                      onClick={() => rotateWebhookSecretMutation.mutate(endpoint.id)}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Rotate
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })()}
+
+            <Card className="flex flex-col gap-3">
+              <h3 className="text-sm font-medium">Delivery log</h3>
+              <div className="overflow-x-auto rounded-lg border border-border">
+                {!webhookDeliveriesQuery.data ? (
+                  <SkeletonRows rows={2} cols={4} />
+                ) : webhookDeliveriesQuery.data.length === 0 ? (
+                  <EmptyState icon={Webhook} message="No deliveries yet." />
+                ) : (
+                  <table className="w-full text-sm">
+                    <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
+                      <tr>
+                        <th className="px-4 py-2 font-medium">Event</th>
+                        <th className="px-4 py-2 font-medium">Status</th>
+                        <th className="px-4 py-2 font-medium">Attempt</th>
+                        <th className="px-4 py-2 font-medium">Sent</th>
+                        <th className="px-4 py-2 font-medium"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {webhookDeliveriesQuery.data.map((delivery) => (
+                        <tr key={delivery.id} className="border-t border-border">
+                          <td className="px-4 py-2">{delivery.eventType}</td>
+                          <td className="px-4 py-2">
+                            <Badge variant={DELIVERY_STATUS_BADGE[delivery.status].variant}>{DELIVERY_STATUS_BADGE[delivery.status].label}</Badge>
+                            {delivery.errorMessage && <p className="mt-1 text-xs text-muted">{delivery.errorMessage}</p>}
+                          </td>
+                          <td className="px-4 py-2 text-muted">{delivery.attempt}</td>
+                          <td className="px-4 py-2 text-muted">{new Date(delivery.createdAt).toLocaleString('pt-BR')}</td>
+                          <td className="px-4 py-2 text-right">
+                            {(delivery.status === 'failed' || delivery.status === 'exhausted') && (
+                              <button
+                                type="button"
+                                className="text-xs text-accent hover:underline"
+                                disabled={retryDeliveryMutation.isPending}
+                                onClick={() => retryDeliveryMutation.mutate(delivery.id)}
+                              >
+                                Retry now
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </Card>
+          </>
+        )}
       </div>
     </>
   );

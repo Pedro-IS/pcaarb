@@ -21,6 +21,7 @@ import { StockService } from '../stock/stock.service';
 import { PAYMENT_PROVIDER, type PaymentProvider } from '../payments/payment-provider.interface';
 import { FiscalService } from '../fiscal/fiscal.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { WebhooksService } from '../webhooks/webhooks.service';
 import { calculateSaleTotals, sumPaymentsCents } from './sale-calculations';
 
 export interface SaleWithDetails extends SaleRow {
@@ -40,6 +41,7 @@ export class SalesService {
     @Inject(PAYMENT_PROVIDER) private readonly paymentProvider: PaymentProvider,
     private readonly fiscalService: FiscalService,
     private readonly loyaltyService: LoyaltyService,
+    private readonly webhooksService: WebhooksService,
   ) {}
 
   async create(tenantId: string, sellerId: string, input: CreateSaleInput): Promise<SaleWithDetails> {
@@ -61,7 +63,7 @@ export class SalesService {
       throw new BadRequestException('Abra o caixa antes de registrar uma venda');
     }
 
-    return runWithTenant(this.db, tenantId, async (tx) => {
+    const { sale: result, isNewSale } = await runWithTenant(this.db, tenantId, async (tx) => {
       const productIds = input.items.map((item) => item.productId);
       const productRows = await tx
         .select()
@@ -134,7 +136,7 @@ export class SalesService {
         if (!existing) {
           throw new Error('Falha ao registrar venda (conflito de idempotência sem venda correspondente)');
         }
-        return existing;
+        return { sale: existing, isNewSale: false };
       }
 
       if (pointsToRedeem > 0) {
@@ -244,14 +246,26 @@ export class SalesService {
       }
 
       return {
-        ...sale,
-        items: insertedItems,
-        payments: insertedPayments,
-        fiscalDocument,
-        pointsRedeemed: pointsToRedeem,
-        pointsEarned,
+        sale: {
+          ...sale,
+          items: insertedItems,
+          payments: insertedPayments,
+          fiscalDocument,
+          pointsRedeemed: pointsToRedeem,
+          pointsEarned,
+        },
+        isNewSale: true,
       };
     });
+
+    // Only for a genuinely new sale — a replayed offline sync (either
+    // return above with isNewSale: false) must never re-notify subscribers
+    // about a sale that already happened.
+    if (isNewSale) {
+      void this.webhooksService.dispatchEvent(tenantId, 'sale.completed', toSaleEventPayload(result));
+    }
+
+    return result;
   }
 
   async findByIdOrThrow(tenantId: string, id: string): Promise<SaleWithDetails> {
@@ -309,4 +323,18 @@ export class SalesService {
 
 function formatCents(cents: number): string {
   return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
+}
+
+function toSaleEventPayload(sale: SaleWithDetails): Record<string, unknown> {
+  return {
+    saleId: sale.id,
+    storeId: sale.storeId,
+    customerId: sale.customerId,
+    sellerId: sale.sellerId,
+    subtotalCents: sale.subtotalCents,
+    discountCents: sale.discountCents,
+    totalCents: sale.totalCents,
+    itemCount: sale.items.length,
+    createdAt: sale.createdAt.toISOString(),
+  };
 }
