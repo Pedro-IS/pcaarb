@@ -19,9 +19,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
 
 const productFormSchema = z.object({
-  name: z.string().min(2, 'Nome muito curto'),
+  name: z.string().min(2, 'Name too short'),
   sku: z.string().optional(),
-  priceReais: z.string().min(1, 'Informe o preço'),
+  priceReais: z.string().min(1, 'Enter the price'),
   categoryId: z.string().optional(),
 });
 
@@ -109,7 +109,7 @@ export default function ProdutosPage() {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (error) => {
-      setStockError(error instanceof ApiError ? error.message : 'Erro inesperado');
+      setStockError(error instanceof ApiError ? error.message : 'Unexpected error');
     },
   });
 
@@ -119,17 +119,17 @@ export default function ProdutosPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Produtos</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
 
       <Card
         as="form"
         className="flex flex-col gap-4"
         onSubmit={handleSubmit((values) => createMutation.mutate(values))}
       >
-        <h2 className="text-sm font-medium">Novo produto</h2>
+        <h2 className="text-sm font-medium">New product</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">Nome</label>
+            <label className="text-sm">Name</label>
             <Input {...register('name')} />
             {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
           </div>
@@ -138,14 +138,14 @@ export default function ProdutosPage() {
             <Input {...register('sku')} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Preço (R$)</label>
-            <Input placeholder="0,00" {...register('priceReais')} />
+            <label className="text-sm">Price (R$)</label>
+            <Input placeholder="0.00" {...register('priceReais')} />
             {errors.priceReais && <p className="text-sm text-red-600">{errors.priceReais.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">Categoria</label>
+            <label className="text-sm">Category</label>
             <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('categoryId')}>
-              <option value="">Sem categoria</option>
+              <option value="">No category</option>
               {categoriesQuery.data?.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -156,14 +156,14 @@ export default function ProdutosPage() {
         </div>
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
         <Button type="submit" loading={createMutation.isPending} className="self-start">
-          Adicionar produto
+          Add product
         </Button>
       </Card>
 
       <div className="flex items-end gap-2 rounded-lg border border-dashed border-border p-4">
         <div className="flex flex-1 flex-col gap-1.5">
-          <label className="text-sm">Nova categoria</label>
-          <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Ex.: Bebidas" />
+          <label className="text-sm">New category</label>
+          <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="E.g.: Beverages" />
         </div>
         <Button
           type="button"
@@ -172,13 +172,13 @@ export default function ProdutosPage() {
           loading={createCategoryMutation.isPending}
           onClick={() => createCategoryMutation.mutate(newCategoryName.trim())}
         >
-          Criar categoria
+          Create category
         </Button>
       </div>
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted">
-          {productsQuery.data ? `${productsQuery.data.length} produto(s)` : ''}
+          {productsQuery.data ? `${productsQuery.data.length} product(s)` : ''}
         </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!productsQuery.data ? (
@@ -187,10 +187,10 @@ export default function ProdutosPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Nome</th>
+                  <th className="px-4 py-2 font-medium">Name</th>
                   <th className="px-4 py-2 font-medium">SKU</th>
-                  <th className="px-4 py-2 font-medium">Preço</th>
-                  <th className="px-4 py-2 font-medium">Estoque</th>
+                  <th className="px-4 py-2 font-medium">Price</th>
+                  <th className="px-4 py-2 font-medium">Stock</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
@@ -207,7 +207,7 @@ export default function ProdutosPage() {
                       </td>
                       <td className="px-4 py-2">
                         <Badge variant={product.active ? 'success' : 'neutral'}>
-                          {product.active ? 'Ativo' : 'Inativo'}
+                          {product.active ? 'Active' : 'Inactive'}
                         </Badge>
                       </td>
                       <td className="px-4 py-2 text-right">
@@ -221,7 +221,7 @@ export default function ProdutosPage() {
                             }}
                           >
                             <SlidersHorizontal className="h-3.5 w-3.5" />
-                            Movimentar
+                            Move stock
                           </button>
                         )}
                       </td>
@@ -237,20 +237,20 @@ export default function ProdutosPage() {
                           <td className="px-4 py-3" colSpan={6}>
                             <div className="flex flex-wrap items-end gap-3">
                               <div className="flex flex-col gap-1.5">
-                                <label className="text-xs">Tipo</label>
+                                <label className="text-xs">Type</label>
                                 <select
                                   className="h-9 rounded-md border border-border bg-card px-2 text-sm"
                                   value={stockType}
                                   onChange={(e) => setStockType(e.target.value as typeof stockType)}
                                 >
-                                  <option value="entrada">Entrada</option>
-                                  <option value="saida">Saída</option>
-                                  <option value="ajuste">Ajuste (correção de contagem)</option>
+                                  <option value="entrada">Stock in</option>
+                                  <option value="saida">Stock out</option>
+                                  <option value="ajuste">Adjustment (count correction)</option>
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1.5">
                                 <label className="text-xs">
-                                  {stockType === 'ajuste' ? 'Delta (pode ser negativo)' : 'Quantidade'}
+                                  {stockType === 'ajuste' ? 'Delta (can be negative)' : 'Quantity'}
                                 </label>
                                 <Input
                                   className="w-28"
@@ -260,7 +260,7 @@ export default function ProdutosPage() {
                                 />
                               </div>
                               <div className="flex flex-col gap-1.5">
-                                <label className="text-xs">Motivo (opcional)</label>
+                                <label className="text-xs">Reason (optional)</label>
                                 <Input className="w-48" value={stockReason} onChange={(e) => setStockReason(e.target.value)} />
                               </div>
                               <Button
@@ -270,7 +270,7 @@ export default function ProdutosPage() {
                                 loading={stockMovementMutation.isPending}
                                 onClick={() => stockMovementMutation.mutate(product.id)}
                               >
-                                Confirmar
+                                Confirm
                               </Button>
                               {stockError && <p className="text-sm text-red-600">{stockError}</p>}
                             </div>
@@ -283,7 +283,7 @@ export default function ProdutosPage() {
               </tbody>
             </table>
           )}
-          {productsQuery.data?.length === 0 && <EmptyState icon={Package} message="Nenhum produto cadastrado ainda." />}
+          {productsQuery.data?.length === 0 && <EmptyState icon={Package} message="No products registered yet." />}
         </div>
       </div>
     </>

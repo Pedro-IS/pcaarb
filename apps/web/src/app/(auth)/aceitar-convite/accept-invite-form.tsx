@@ -44,9 +44,9 @@ export function AcceptInviteForm() {
   if (!inviteId || !token) {
     return (
       <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6">
-        <p className="text-sm text-red-600">Link de convite inválido. Peça um novo convite a quem te chamou.</p>
+        <p className="text-sm text-red-600">Invalid invite link. Ask whoever invited you for a new one.</p>
         <Link href="/login" className="text-sm font-medium text-accent hover:underline">
-          Ir para o login
+          Go to login
         </Link>
       </main>
     );
@@ -61,8 +61,8 @@ export function AcceptInviteForm() {
     >
       <div>
         <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Aceitar convite</h1>
-        <p className="mt-1 text-sm text-muted">Defina seu nome e senha para entrar no PCAARB.</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Accept invite</h1>
+        <p className="mt-1 text-sm text-muted">Set your name and password to sign in to PCAARB.</p>
       </div>
 
       <form
@@ -73,13 +73,13 @@ export function AcceptInviteForm() {
         <input type="hidden" {...register('token')} />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Seu nome</label>
+          <label className="text-sm font-medium">Your name</label>
           <Input {...register('name')} />
           {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Senha</label>
+          <label className="text-sm font-medium">Password</label>
           <Input type="password" autoComplete="new-password" {...register('password')} />
           {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
         </div>
@@ -87,7 +87,7 @@ export function AcceptInviteForm() {
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
-          Aceitar convite e entrar
+          Accept invite and sign in
         </Button>
       </form>
     </motion.main>

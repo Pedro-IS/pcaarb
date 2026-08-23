@@ -42,51 +42,51 @@ type NavEntry =
   | { kind: 'group'; label: string; icon: LucideIcon; items: NavLink[] };
 
 // Grouped instead of a single list (which grew past 14 items and forced
-// scrolling the bar to find anything): Painel/PDV stay loose since they're
+// scrolling the bar to find anything): Dashboard/POS stay loose since they're
 // the most used screens day-to-day, the rest go into 4 groups by area.
 const NAV_ENTRIES: NavEntry[] = [
-  { kind: 'link', link: { href: '/painel', label: 'Painel', icon: LayoutDashboard } },
-  { kind: 'link', link: { href: '/painel/pdv', label: 'PDV', icon: ShoppingCart } },
+  { kind: 'link', link: { href: '/painel', label: 'Dashboard', icon: LayoutDashboard } },
+  { kind: 'link', link: { href: '/painel/pdv', label: 'POS', icon: ShoppingCart } },
   {
     kind: 'group',
-    label: 'Operação',
+    label: 'Operations',
     icon: Package,
     items: [
-      { href: '/painel/produtos', label: 'Produtos', icon: Package },
-      { href: '/painel/vendas', label: 'Vendas', icon: Receipt },
-      { href: '/painel/contagens', label: 'Inventário', icon: ClipboardList },
-      { href: '/painel/compras', label: 'Compras', icon: ShoppingBag },
+      { href: '/painel/produtos', label: 'Products', icon: Package },
+      { href: '/painel/vendas', label: 'Sales', icon: Receipt },
+      { href: '/painel/contagens', label: 'Inventory', icon: ClipboardList },
+      { href: '/painel/compras', label: 'Purchases', icon: ShoppingBag },
     ],
   },
   {
     kind: 'group',
-    label: 'Clientes',
+    label: 'Contacts',
     icon: Contact,
     items: [
-      { href: '/painel/cadastros', label: 'Cadastros', icon: Contact },
-      { href: '/painel/fidelidade', label: 'Fidelidade', icon: Gift },
+      { href: '/painel/cadastros', label: 'Customers & Suppliers', icon: Contact },
+      { href: '/painel/fidelidade', label: 'Loyalty', icon: Gift },
     ],
   },
   {
     kind: 'group',
-    label: 'Financeiro',
+    label: 'Finance',
     icon: Wallet,
     items: [
-      { href: '/painel/financeiro', label: 'Financeiro', icon: Wallet },
-      { href: '/painel/relatorios', label: 'Relatórios', icon: BarChart3 },
-      { href: '/painel/comissoes', label: 'Comissões', icon: Percent },
+      { href: '/painel/financeiro', label: 'Finance', icon: Wallet },
+      { href: '/painel/relatorios', label: 'Reports', icon: BarChart3 },
+      { href: '/painel/comissoes', label: 'Commissions', icon: Percent },
     ],
   },
   {
     kind: 'group',
-    label: 'Configurações',
+    label: 'Settings',
     icon: Settings,
     items: [
-      { href: '/painel/lojas', label: 'Lojas', icon: Store },
-      { href: '/painel/integracoes', label: 'Integrações', icon: Plug },
-      { href: '/painel/usuarios', label: 'Usuários', icon: Users },
-      { href: '/painel/assinatura', label: 'Assinatura', icon: CreditCard },
-      { href: '/painel/auditoria', label: 'Auditoria', icon: History },
+      { href: '/painel/lojas', label: 'Stores', icon: Store },
+      { href: '/painel/integracoes', label: 'Integrations', icon: Plug },
+      { href: '/painel/usuarios', label: 'Users', icon: Users },
+      { href: '/painel/assinatura', label: 'Subscription', icon: CreditCard },
+      { href: '/painel/auditoria', label: 'Audit Log', icon: History },
     ],
   },
 ];
@@ -178,7 +178,7 @@ function NavGroup({
 }
 
 // The state of which dropdown is open needs to reset when the route changes
-// (a link inside the group, or Painel/PDV clicked while another group was
+// (a link inside the group, or Dashboard/POS clicked while another group was
 // open). Instead of useEffect or comparing a ref during render (both
 // forbidden by this project's hooks rules — setState in an effect causes a
 // cascading render cycle, and reading/writing a ref during render breaks
@@ -264,7 +264,7 @@ export function Topbar() {
             type="button"
             onClick={logout}
             className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-            title="Sair"
+            title="Log out"
           >
             <LogOut className="h-4 w-4" />
           </button>

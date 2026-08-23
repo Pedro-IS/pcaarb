@@ -19,9 +19,9 @@ import { SkeletonRows } from '@/components/ui/skeleton';
 
 const entryFormSchema = z.object({
   type: z.enum(['payable', 'receivable']),
-  description: z.string().min(2, 'Descrição muito curta'),
-  amountReais: z.string().min(1, 'Informe o valor'),
-  dueDate: z.string().min(1, 'Informe o vencimento'),
+  description: z.string().min(2, 'Description too short'),
+  amountReais: z.string().min(1, 'Enter an amount'),
+  dueDate: z.string().min(1, 'Enter a due date'),
   customerId: z.string().optional(),
   supplierId: z.string().optional(),
   costCenterId: z.string().optional(),
@@ -140,35 +140,35 @@ export default function FinanceiroPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Financeiro</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Finance</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
-            <ArrowUpCircle className="h-3.5 w-3.5" />A receber (pendente)
+            <ArrowUpCircle className="h-3.5 w-3.5" />Receivable (pending)
           </div>
           <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.pendingReceivableCents) : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
-            <ArrowDownCircle className="h-3.5 w-3.5" />A pagar (pendente)
+            <ArrowDownCircle className="h-3.5 w-3.5" />Payable (pending)
           </div>
           <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.pendingPayableCents) : '—'}</p>
           {summary && summary.overduePayableCents > 0 && (
-            <p className="text-xs text-red-600">{formatCentsToBRL(summary.overduePayableCents)} vencido</p>
+            <p className="text-xs text-red-600">{formatCentsToBRL(summary.overduePayableCents)} overdue</p>
           )}
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <Receipt className="h-3.5 w-3.5" />
-            Recebido
+            Received
           </div>
           <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.paidReceivableCents) : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <Wallet className="h-3.5 w-3.5" />
-            Saldo
+            Balance
           </div>
           <p className={`text-lg font-semibold ${summary && summary.netCents < 0 ? 'text-red-600' : 'text-green-600'}`}>
             {summary ? formatCentsToBRL(summary.netCents) : '—'}
@@ -177,35 +177,35 @@ export default function FinanceiroPage() {
       </div>
 
       <Card as="form" className="flex flex-col gap-4" onSubmit={handleSubmit((values) => createMutation.mutate(values))}>
-        <h2 className="text-sm font-medium">Nova conta</h2>
+        <h2 className="text-sm font-medium">New entry</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Tipo</label>
+            <label className="text-sm">Type</label>
             <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('type')}>
-              <option value="payable">A pagar</option>
-              <option value="receivable">A receber</option>
+              <option value="payable">Payable</option>
+              <option value="receivable">Receivable</option>
             </select>
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">Descrição</label>
+            <label className="text-sm">Description</label>
             <Input {...register('description')} />
             {errors.description && <p className="text-sm text-red-600">{errors.description.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Valor (R$)</label>
-            <Input placeholder="0,00" {...register('amountReais')} />
+            <label className="text-sm">Amount (R$)</label>
+            <Input placeholder="0.00" {...register('amountReais')} />
             {errors.amountReais && <p className="text-sm text-red-600">{errors.amountReais.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Vencimento</label>
+            <label className="text-sm">Due date</label>
             <Input type="date" {...register('dueDate')} />
             {errors.dueDate && <p className="text-sm text-red-600">{errors.dueDate.message}</p>}
           </div>
           {selectedType === 'receivable' && (
             <div className="flex flex-col gap-1.5 sm:col-span-2">
-              <label className="text-sm">Cliente (opcional)</label>
+              <label className="text-sm">Customer (optional)</label>
               <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('customerId')}>
-                <option value="">Sem cliente</option>
+                <option value="">No customer</option>
                 {customersQuery.data?.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.name}
@@ -216,9 +216,9 @@ export default function FinanceiroPage() {
           )}
           {selectedType === 'payable' && (
             <div className="flex flex-col gap-1.5 sm:col-span-2">
-              <label className="text-sm">Fornecedor (opcional)</label>
+              <label className="text-sm">Supplier (optional)</label>
               <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('supplierId')}>
-                <option value="">Sem fornecedor</option>
+                <option value="">No supplier</option>
                 {suppliersQuery.data?.map((supplier) => (
                   <option key={supplier.id} value={supplier.id}>
                     {supplier.name}
@@ -228,9 +228,9 @@ export default function FinanceiroPage() {
             </div>
           )}
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">Centro de custo (opcional)</label>
+            <label className="text-sm">Cost center (optional)</label>
             <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('costCenterId')}>
-              <option value="">Sem centro de custo</option>
+              <option value="">No cost center</option>
               {costCentersQuery.data
                 ?.filter((cc) => cc.active)
                 .map((costCenter) => (
@@ -243,14 +243,14 @@ export default function FinanceiroPage() {
         </div>
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
         <Button type="submit" loading={createMutation.isPending} className="self-start">
-          Adicionar conta
+          Add entry
         </Button>
       </Card>
 
       <div className="flex items-end gap-2 rounded-lg border border-dashed border-border p-4">
         <div className="flex flex-1 flex-col gap-1.5">
-          <label className="text-sm">Novo centro de custo</label>
-          <Input value={newCostCenterName} onChange={(e) => setNewCostCenterName(e.target.value)} placeholder="Ex.: Loja, Marketing" />
+          <label className="text-sm">New cost center</label>
+          <Input value={newCostCenterName} onChange={(e) => setNewCostCenterName(e.target.value)} placeholder="E.g.: Store, Marketing" />
         </div>
         <Button
           type="button"
@@ -259,12 +259,12 @@ export default function FinanceiroPage() {
           loading={createCostCenterMutation.isPending}
           onClick={() => createCostCenterMutation.mutate(newCostCenterName.trim())}
         >
-          Criar centro de custo
+          Create cost center
         </Button>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-muted">{entriesQuery.data ? `${entriesQuery.data.length} conta(s)` : ''}</h2>
+        <h2 className="text-sm font-medium text-muted">{entriesQuery.data ? `${entriesQuery.data.length} entrie(s)` : ''}</h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!entriesQuery.data ? (
             <SkeletonRows rows={4} cols={5} />
@@ -272,11 +272,11 @@ export default function FinanceiroPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Tipo</th>
-                  <th className="px-4 py-2 font-medium">Descrição</th>
-                  <th className="px-4 py-2 font-medium">Valor</th>
-                  <th className="px-4 py-2 font-medium">Vencimento</th>
-                  <th className="px-4 py-2 font-medium">Centro de custo</th>
+                  <th className="px-4 py-2 font-medium">Type</th>
+                  <th className="px-4 py-2 font-medium">Description</th>
+                  <th className="px-4 py-2 font-medium">Amount</th>
+                  <th className="px-4 py-2 font-medium">Due date</th>
+                  <th className="px-4 py-2 font-medium">Cost center</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
@@ -284,7 +284,7 @@ export default function FinanceiroPage() {
               <tbody>
                 {entriesQuery.data.map((entry) => (
                   <tr key={entry.id} className="border-t border-border">
-                    <td className="px-4 py-2">{entry.type === 'payable' ? 'A pagar' : 'A receber'}</td>
+                    <td className="px-4 py-2">{entry.type === 'payable' ? 'Payable' : 'Receivable'}</td>
                     <td className="px-4 py-2">{entry.description}</td>
                     <td className="px-4 py-2">{formatCentsToBRL(entry.amountCents)}</td>
                     <td className="px-4 py-2">{entry.dueDate}</td>
@@ -293,13 +293,13 @@ export default function FinanceiroPage() {
                     </td>
                     <td className="px-4 py-2">
                       {isOverdue(entry) ? (
-                        <Badge variant="danger">Vencida</Badge>
+                        <Badge variant="danger">Overdue</Badge>
                       ) : entry.status === 'paid' ? (
-                        <Badge variant="success">Paga</Badge>
+                        <Badge variant="success">Paid</Badge>
                       ) : entry.status === 'canceled' ? (
-                        <Badge variant="neutral">Cancelada</Badge>
+                        <Badge variant="neutral">Canceled</Badge>
                       ) : (
-                        <Badge variant="warning">Pendente</Badge>
+                        <Badge variant="warning">Pending</Badge>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right">
@@ -311,7 +311,7 @@ export default function FinanceiroPage() {
                             disabled={payMutation.isPending}
                             onClick={() => payMutation.mutate(entry.id)}
                           >
-                            Pagar
+                            Pay
                           </button>
                           <button
                             type="button"
@@ -319,7 +319,7 @@ export default function FinanceiroPage() {
                             disabled={cancelMutation.isPending}
                             onClick={() => cancelMutation.mutate(entry.id)}
                           >
-                            Cancelar
+                            Cancel
                           </button>
                         </div>
                       )}
@@ -329,7 +329,7 @@ export default function FinanceiroPage() {
               </tbody>
             </table>
           )}
-          {entriesQuery.data?.length === 0 && <EmptyState icon={Wallet} message="Nenhuma conta cadastrada ainda." />}
+          {entriesQuery.data?.length === 0 && <EmptyState icon={Wallet} message="No entries registered yet." />}
         </div>
       </div>
     </>

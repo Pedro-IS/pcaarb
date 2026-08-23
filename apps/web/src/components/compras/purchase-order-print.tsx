@@ -19,16 +19,16 @@ export function PurchaseOrderPrint({ order, companyName, supplier }: PurchaseOrd
       <div className="flex items-start justify-between border-b border-black pb-4">
         <div>
           <p className="text-lg font-bold">{companyName}</p>
-          <p className="text-muted">Pedido de compra</p>
+          <p className="text-muted">Purchase order</p>
         </div>
         <div className="text-right">
-          <p className="font-semibold">Nº {order.id.slice(0, 8)}</p>
+          <p className="font-semibold">No. {order.id.slice(0, 8)}</p>
           <p>{createdAt.toLocaleDateString('pt-BR')}</p>
         </div>
       </div>
 
       <div className="mt-4">
-        <p className="font-semibold">Fornecedor</p>
+        <p className="font-semibold">Supplier</p>
         <p>{supplier?.name ?? '—'}</p>
         {supplier?.document && <p>CPF/CNPJ: {supplier.document}</p>}
         {supplier?.email && <p>{supplier.email}</p>}
@@ -38,9 +38,9 @@ export function PurchaseOrderPrint({ order, companyName, supplier }: PurchaseOrd
       <table className="mt-6 w-full border-collapse text-left">
         <thead>
           <tr className="border-b border-black">
-            <th className="py-1.5">Produto</th>
-            <th className="py-1.5 text-right">Qtd.</th>
-            <th className="py-1.5 text-right">Custo unit.</th>
+            <th className="py-1.5">Product</th>
+            <th className="py-1.5 text-right">Qty.</th>
+            <th className="py-1.5 text-right">Unit cost</th>
             <th className="py-1.5 text-right">Total</th>
           </tr>
         </thead>
@@ -62,7 +62,7 @@ export function PurchaseOrderPrint({ order, companyName, supplier }: PurchaseOrd
 
       {order.notes && (
         <div className="mt-4 border-t border-black pt-2">
-          <p className="font-semibold">Observações</p>
+          <p className="font-semibold">Notes</p>
           <p>{order.notes}</p>
         </div>
       )}

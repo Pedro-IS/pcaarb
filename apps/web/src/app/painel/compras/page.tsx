@@ -119,10 +119,10 @@ export default function ComprasPage() {
     onSuccess: () => {
       resetForm();
       invalidateOrders();
-      toast.success('Pedido de compra criado');
+      toast.success('Purchase order created');
     },
     onError: (error) => {
-      setFormError(error instanceof ApiError ? error.message : 'Erro inesperado ao criar o pedido');
+      setFormError(error instanceof ApiError ? error.message : 'Unexpected error creating the order');
     },
   });
 
@@ -132,10 +132,10 @@ export default function ComprasPage() {
     onSuccess: () => {
       invalidateOrders();
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Pedido recebido — estoque atualizado');
+      toast.success('Order received — stock updated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao receber o pedido');
+      toast.error(error instanceof ApiError ? error.message : 'Error receiving the order');
     },
   });
 
@@ -144,10 +144,10 @@ export default function ComprasPage() {
       apiFetch(`/purchase-orders/${id}/cancel`, { method: 'POST', accessToken: accessToken! }),
     onSuccess: () => {
       invalidateOrders();
-      toast.success('Pedido cancelado');
+      toast.success('Order canceled');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao cancelar o pedido');
+      toast.error(error instanceof ApiError ? error.message : 'Error canceling the order');
     },
   });
 
@@ -157,20 +157,20 @@ export default function ComprasPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Compras</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Purchases</h1>
 
       <Card className="flex flex-col gap-4">
-        <h2 className="text-sm font-medium">Novo pedido</h2>
+        <h2 className="text-sm font-medium">New order</h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Fornecedor</label>
+            <label className="text-sm">Supplier</label>
             <select
               className="h-10 rounded-md border border-border bg-card px-3 text-sm"
               value={selectedSupplierId}
               onChange={(e) => setSelectedSupplierId(e.target.value)}
             >
-              <option value="">Selecione...</option>
+              <option value="">Select...</option>
               {suppliersQuery.data?.map((supplier) => (
                 <option key={supplier.id} value={supplier.id}>
                   {supplier.name}
@@ -179,16 +179,16 @@ export default function ComprasPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Observações (opcional)</label>
+            <label className="text-sm">Notes (optional)</label>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
         </div>
 
         <div className="flex flex-col gap-2 border-t border-border pt-4">
-          <h3 className="text-sm font-medium">Itens</h3>
+          <h3 className="text-sm font-medium">Items</h3>
           <div className="flex flex-wrap items-end gap-2">
             <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-sm">Produto</label>
+              <label className="text-sm">Product</label>
               <select
                 className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                 value={selectedProductId}
@@ -200,7 +200,7 @@ export default function ComprasPage() {
                   }
                 }}
               >
-                <option value="">Selecione...</option>
+                <option value="">Select...</option>
                 {productsQuery.data?.map((product) => (
                   <option key={product.id} value={product.id}>
                     {product.name}
@@ -209,13 +209,13 @@ export default function ComprasPage() {
               </select>
             </div>
             <div className="flex w-20 flex-col gap-1.5">
-              <label className="text-sm">Qtd.</label>
+              <label className="text-sm">Qty.</label>
               <Input value={quantity} onChange={(e) => setQuantity(e.target.value)} />
             </div>
             <div className="flex w-28 flex-col gap-1.5">
-              <label className="text-sm">Custo unit. (R$)</label>
+              <label className="text-sm">Unit cost (R$)</label>
               <Input
-                placeholder="0,00"
+                placeholder="0.00"
                 value={unitCostReais}
                 onChange={(e) => setUnitCostReais(e.target.value)}
               />
@@ -227,16 +227,16 @@ export default function ComprasPage() {
               disabled={!selectedProductId || !unitCostReais}
             >
               <Plus className="h-4 w-4" />
-              Adicionar
+              Add
             </Button>
           </div>
 
           <table className="w-full text-sm">
             <thead className="text-left text-muted">
               <tr>
-                <th className="py-1">Produto</th>
-                <th className="py-1">Qtd.</th>
-                <th className="py-1">Custo unit.</th>
+                <th className="py-1">Product</th>
+                <th className="py-1">Qty.</th>
+                <th className="py-1">Unit cost</th>
                 <th className="py-1">Total</th>
                 <th className="py-1" />
               </tr>
@@ -265,7 +265,7 @@ export default function ComprasPage() {
                         type="button"
                         className="text-red-600 transition-colors hover:text-red-500"
                         onClick={() => removeLine(line.productId)}
-                        aria-label="Remover"
+                        aria-label="Remove"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -276,7 +276,7 @@ export default function ComprasPage() {
             </tbody>
           </table>
           {lines.length === 0 && (
-            <EmptyState icon={Package} message="Nenhum item adicionado ainda." />
+            <EmptyState icon={Package} message="No items added yet." />
           )}
 
           <p className="self-end text-sm font-semibold">Total: {formatCentsToBRL(totalCents)}</p>
@@ -290,28 +290,28 @@ export default function ComprasPage() {
           loading={createMutation.isPending}
           onClick={() => createMutation.mutate()}
         >
-          Criar pedido
+          Create order
         </Button>
       </Card>
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted">
-          {ordersQuery.data ? `${ordersQuery.data.length} pedido(s)` : ''}
+          {ordersQuery.data ? `${ordersQuery.data.length} order(s)` : ''}
         </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!ordersQuery.data ? (
             <SkeletonRows rows={4} cols={6} />
           ) : ordersQuery.data.length === 0 ? (
-            <EmptyState icon={ShoppingBag} message="Nenhum pedido de compra ainda." />
+            <EmptyState icon={ShoppingBag} message="No purchase orders yet." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Fornecedor</th>
-                  <th className="px-4 py-2 font-medium">Itens</th>
+                  <th className="px-4 py-2 font-medium">Supplier</th>
+                  <th className="px-4 py-2 font-medium">Items</th>
                   <th className="px-4 py-2 font-medium">Total</th>
                   <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium">Criado em</th>
+                  <th className="px-4 py-2 font-medium">Created on</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
               </thead>
@@ -332,11 +332,11 @@ export default function ComprasPage() {
                         <td className="px-4 py-2">{formatCentsToBRL(order.totalCents)}</td>
                         <td className="px-4 py-2">
                           {order.status === 'received' ? (
-                            <Badge variant="success">Recebido</Badge>
+                            <Badge variant="success">Received</Badge>
                           ) : order.status === 'canceled' ? (
-                            <Badge variant="neutral">Cancelado</Badge>
+                            <Badge variant="neutral">Canceled</Badge>
                           ) : (
-                            <Badge variant="warning">Rascunho</Badge>
+                            <Badge variant="warning">Draft</Badge>
                           )}
                         </td>
                         <td className="px-4 py-2">
@@ -355,7 +355,7 @@ export default function ComprasPage() {
                                   disabled={receiveMutation.isPending}
                                   onClick={() => receiveMutation.mutate(order.id)}
                                 >
-                                  Receber
+                                  Receive
                                 </button>
                                 <button
                                   type="button"
@@ -363,7 +363,7 @@ export default function ComprasPage() {
                                   disabled={cancelMutation.isPending}
                                   onClick={() => cancelMutation.mutate(order.id)}
                                 >
-                                  Cancelar
+                                  Cancel
                                 </button>
                               </>
                             )}
@@ -386,11 +386,11 @@ export default function ComprasPage() {
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-muted">
-                                    Pedido {order.id.slice(0, 8)}
+                                    Order {order.id.slice(0, 8)}
                                   </span>
                                   <Button variant="secondary" onClick={() => window.print()}>
                                     <Printer className="h-4 w-4" />
-                                    Imprimir pedido
+                                    Print order
                                   </Button>
                                 </div>
                                 <PurchaseOrderPrint

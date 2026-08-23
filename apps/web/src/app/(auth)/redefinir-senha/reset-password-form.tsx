@@ -40,9 +40,9 @@ export function ResetPasswordForm() {
   if (!id || !token) {
     return (
       <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6">
-        <p className="text-sm text-red-600">Link de redefinição inválido. Peça um novo em &quot;Esqueci minha senha&quot;.</p>
+        <p className="text-sm text-red-600">Invalid reset link. Request a new one from &quot;Forgot my password&quot;.</p>
         <Link href="/esqueci-senha" className="text-sm font-medium text-accent hover:underline">
-          Esqueci minha senha
+          Forgot my password
         </Link>
       </main>
     );
@@ -57,8 +57,8 @@ export function ResetPasswordForm() {
     >
       <div>
         <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Escolher nova senha</h1>
-        <p className="mt-1 text-sm text-muted">Suas sessões atuais serão encerradas depois da troca.</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Choose new password</h1>
+        <p className="mt-1 text-sm text-muted">Your current sessions will be ended after the change.</p>
       </div>
 
       <form
@@ -69,7 +69,7 @@ export function ResetPasswordForm() {
         <input type="hidden" {...register('token')} />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Nova senha</label>
+          <label className="text-sm font-medium">New password</label>
           <Input type="password" autoComplete="new-password" {...register('password')} />
           {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
         </div>
@@ -77,7 +77,7 @@ export function ResetPasswordForm() {
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
-          Redefinir senha
+          Reset password
         </Button>
       </form>
     </motion.main>

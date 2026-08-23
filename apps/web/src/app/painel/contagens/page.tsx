@@ -52,13 +52,13 @@ export default function ContagensPage() {
       setNotes('');
       invalidateCounts();
       if (count.items.length === 0) {
-        toast.error('Nenhum produto com controle de estoque para contar');
+        toast.error('No products with stock tracking to count');
       } else {
-        toast.success('Contagem aberta');
+        toast.success('Count opened');
       }
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao abrir contagem');
+      toast.error(error instanceof ApiError ? error.message : 'Error opening count');
     },
   });
 
@@ -71,7 +71,7 @@ export default function ContagensPage() {
       }),
     onSuccess: () => invalidateCounts(),
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao registrar contagem do item');
+      toast.error(error instanceof ApiError ? error.message : 'Error recording item count');
     },
   });
 
@@ -79,10 +79,10 @@ export default function ContagensPage() {
     mutationFn: (countId: string) => apiFetch(`/stock-counts/${countId}/finalize`, { method: 'POST', accessToken: accessToken! }),
     onSuccess: () => {
       invalidateCounts();
-      toast.success('Contagem finalizada — estoque ajustado');
+      toast.success('Count finalized — stock adjusted');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao finalizar contagem');
+      toast.error(error instanceof ApiError ? error.message : 'Error finalizing count');
     },
   });
 
@@ -90,10 +90,10 @@ export default function ContagensPage() {
     mutationFn: (countId: string) => apiFetch(`/stock-counts/${countId}/cancel`, { method: 'POST', accessToken: accessToken! }),
     onSuccess: () => {
       invalidateCounts();
-      toast.success('Contagem cancelada');
+      toast.success('Count canceled');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao cancelar contagem');
+      toast.error(error instanceof ApiError ? error.message : 'Error canceling count');
     },
   });
 
@@ -103,7 +103,7 @@ export default function ContagensPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Inventário</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Inventory</h1>
 
       {!countsQuery.data ? (
         <Card>
@@ -114,29 +114,29 @@ export default function ContagensPage() {
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-medium">
               <ClipboardList className="h-4 w-4" />
-              Contagem em andamento — {new Date(activeCount.createdAt).toLocaleDateString('pt-BR')}
+              Count in progress — {new Date(activeCount.createdAt).toLocaleDateString('pt-BR')}
             </h2>
             <div className="flex gap-2">
               <Button variant="secondary" loading={cancelMutation.isPending} onClick={() => cancelMutation.mutate(activeCount.id)}>
-                Cancelar
+                Cancel
               </Button>
               <Button loading={finalizeMutation.isPending} onClick={() => finalizeMutation.mutate(activeCount.id)}>
-                Finalizar contagem
+                Finalize count
               </Button>
             </div>
           </div>
 
           {activeCount.items.length === 0 ? (
-            <EmptyState icon={PackageSearch} message="Nenhum produto com controle de estoque para contar." />
+            <EmptyState icon={PackageSearch} message="No products with stock tracking to count." />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                   <tr>
-                    <th className="px-4 py-2 font-medium">Produto</th>
-                    <th className="px-4 py-2 font-medium">Sistema</th>
-                    <th className="px-4 py-2 font-medium">Contado</th>
-                    <th className="px-4 py-2 font-medium">Diferença</th>
+                    <th className="px-4 py-2 font-medium">Product</th>
+                    <th className="px-4 py-2 font-medium">System</th>
+                    <th className="px-4 py-2 font-medium">Counted</th>
+                    <th className="px-4 py-2 font-medium">Difference</th>
                     <th className="px-4 py-2 font-medium"></th>
                   </tr>
                 </thead>
@@ -169,7 +169,7 @@ export default function ContagensPage() {
                             }
                           >
                             <Check className="h-3.5 w-3.5" />
-                            Salvar
+                            Save
                           </button>
                         </td>
                       </tr>
@@ -183,31 +183,31 @@ export default function ContagensPage() {
       ) : (
         <Card className="flex flex-wrap items-end gap-3">
           <div className="flex flex-1 flex-col gap-1.5">
-            <label className="text-sm">Observações (opcional)</label>
-            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex.: contagem mensal" />
+            <label className="text-sm">Notes (optional)</label>
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="E.g.: monthly count" />
           </div>
           <Button loading={openMutation.isPending} onClick={() => openMutation.mutate()}>
-            Abrir nova contagem
+            Open new count
           </Button>
         </Card>
       )}
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted">
-          {countsQuery.data ? `${countsQuery.data.length} contagem(ns)` : ''}
+          {countsQuery.data ? `${countsQuery.data.length} count(s)` : ''}
         </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!countsQuery.data ? (
             <SkeletonRows rows={3} cols={4} />
           ) : countsQuery.data.length === 0 ? (
-            <EmptyState icon={ClipboardList} message="Nenhuma contagem de estoque ainda." />
+            <EmptyState icon={ClipboardList} message="No stock counts yet." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Aberta em</th>
-                  <th className="px-4 py-2 font-medium">Itens</th>
-                  <th className="px-4 py-2 font-medium">Observações</th>
+                  <th className="px-4 py-2 font-medium">Opened on</th>
+                  <th className="px-4 py-2 font-medium">Items</th>
+                  <th className="px-4 py-2 font-medium">Notes</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                 </tr>
               </thead>
@@ -219,11 +219,11 @@ export default function ContagensPage() {
                     <td className="px-4 py-2 text-muted">{count.notes ?? '—'}</td>
                     <td className="px-4 py-2">
                       {count.status === 'completed' ? (
-                        <Badge variant="success">Finalizada</Badge>
+                        <Badge variant="success">Finalized</Badge>
                       ) : count.status === 'canceled' ? (
-                        <Badge variant="neutral">Cancelada</Badge>
+                        <Badge variant="neutral">Canceled</Badge>
                       ) : (
-                        <Badge variant="warning">Em andamento</Badge>
+                        <Badge variant="warning">In progress</Badge>
                       )}
                     </td>
                   </tr>

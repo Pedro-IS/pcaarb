@@ -36,34 +36,34 @@ export default function ForgotPasswordPage() {
     >
       <div>
         <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Esqueci minha senha</h1>
-        <p className="mt-1 text-sm text-muted">Informe o e-mail da sua conta para receber um link de redefinição.</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Forgot my password</h1>
+        <p className="mt-1 text-sm text-muted">Enter your account email to receive a reset link.</p>
       </div>
 
       {sent ? (
         <p className="text-sm">
-          Se existir uma conta com esse e-mail, enviamos um link de redefinição — confira sua caixa de entrada (e o
-          spam).
+          If an account exists with that email, we&apos;ve sent a reset link — check your inbox (and your spam
+          folder).
         </p>
       ) : (
         <form className="flex flex-col gap-4" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-sm font-medium">
-              E-mail
+              Email
             </label>
             <Input id="email" type="email" autoComplete="email" {...register('email')} />
             {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
           </div>
 
           <Button type="submit" loading={mutation.isPending}>
-            Enviar link de redefinição
+            Send reset link
           </Button>
         </form>
       )}
 
       <p className="text-center text-sm text-muted">
         <Link href="/login" className="font-medium text-accent hover:underline">
-          Voltar para o login
+          Back to login
         </Link>
       </p>
     </motion.main>

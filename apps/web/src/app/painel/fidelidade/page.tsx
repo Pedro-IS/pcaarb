@@ -17,9 +17,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
 
 const LEDGER_LABELS: Record<LoyaltyLedgerEntry['type'], { label: string; variant: 'success' | 'warning' | 'neutral' }> = {
-  earn: { label: 'Ganho', variant: 'success' },
-  redeem: { label: 'Resgate', variant: 'warning' },
-  adjustment: { label: 'Ajuste', variant: 'neutral' },
+  earn: { label: 'Earned', variant: 'success' },
+  redeem: { label: 'Redeemed', variant: 'warning' },
+  adjustment: { label: 'Adjustment', variant: 'neutral' },
 };
 
 function ProgramSettings() {
@@ -68,18 +68,18 @@ function ProgramSettingsForm({ program, canEdit }: { program: LoyaltyProgram; ca
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loyalty-program'] });
-      toast.success('Configuração de fidelidade atualizada');
+      toast.success('Loyalty settings updated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao atualizar configuração');
+      toast.error(error instanceof ApiError ? error.message : 'Error updating settings');
     },
   });
 
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Programa de pontos</h2>
-        <Badge variant={active ? 'success' : 'neutral'}>{active ? 'Ativo' : 'Inativo'}</Badge>
+        <h2 className="text-sm font-medium">Points program</h2>
+        <Badge variant={active ? 'success' : 'neutral'}>{active ? 'Active' : 'Inactive'}</Badge>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -91,10 +91,10 @@ function ProgramSettingsForm({ program, canEdit }: { program: LoyaltyProgram; ca
             disabled={!canEdit}
             onChange={(e) => setActive(e.target.checked)}
           />
-          Programa ativo
+          Program active
         </label>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">Pontos por R$1 gasto</label>
+          <label className="text-sm">Points per R$1 spent</label>
           <Input
             type="number"
             min={0}
@@ -104,7 +104,7 @@ function ProgramSettingsForm({ program, canEdit }: { program: LoyaltyProgram; ca
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">Valor de 1 ponto no resgate</label>
+          <label className="text-sm">Value of 1 point when redeemed</label>
           <Input
             type="number"
             min={1}
@@ -113,7 +113,7 @@ function ProgramSettingsForm({ program, canEdit }: { program: LoyaltyProgram; ca
             onChange={(e) => setRedeemValue(e.target.value)}
           />
           <p className="text-xs text-muted">
-            {Number.parseInt(redeemValue, 10) || 0} centavo(s) — 100 pontos valem{' '}
+            {Number.parseInt(redeemValue, 10) || 0} cent(s) — 100 points are worth{' '}
             {formatCentsToBRL((Number.parseInt(redeemValue, 10) || 0) * 100)}
           </p>
         </div>
@@ -125,7 +125,7 @@ function ProgramSettingsForm({ program, canEdit }: { program: LoyaltyProgram; ca
           loading={updateMutation.isPending}
           onClick={() => updateMutation.mutate()}
         >
-          Salvar
+          Save
         </Button>
       )}
     </Card>
@@ -156,15 +156,15 @@ function CustomerLookup() {
 
   return (
     <Card className="flex flex-col gap-4">
-      <h2 className="text-sm font-medium">Consultar cliente</h2>
+      <h2 className="text-sm font-medium">Look up customer</h2>
       <div className="flex flex-col gap-1.5 sm:w-80">
-        <label className="text-sm">Cliente</label>
+        <label className="text-sm">Customer</label>
         <select
           className="h-10 rounded-md border border-border bg-card px-3 text-sm"
           value={selectedCustomerId}
           onChange={(e) => setSelectedCustomerId(e.target.value)}
         >
-          <option value="">Selecione...</option>
+          <option value="">Select...</option>
           {customersQuery.data?.map((customer) => (
             <option key={customer.id} value={customer.id}>
               {customer.name}
@@ -179,28 +179,28 @@ function CustomerLookup() {
             <div className="flex items-center gap-3 rounded-lg border border-border bg-accent-soft/40 px-4 py-3">
               <Gift className="h-5 w-5 text-accent" />
               <div>
-                <p className="text-lg font-semibold">{balanceQuery.data.balancePoints} pontos</p>
+                <p className="text-lg font-semibold">{balanceQuery.data.balancePoints} points</p>
                 <p className="text-sm text-muted">
-                  equivalentes a {formatCentsToBRL(balanceQuery.data.balanceValueCents)} em resgate
+                  worth {formatCentsToBRL(balanceQuery.data.balanceValueCents)} when redeemed
                 </p>
               </div>
             </div>
           )}
 
           <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium text-muted">Histórico</h3>
+            <h3 className="text-sm font-medium text-muted">History</h3>
             <div className="overflow-x-auto rounded-lg border border-border">
               {!ledgerQuery.data ? (
                 <SkeletonRows rows={3} cols={3} />
               ) : ledgerQuery.data.length === 0 ? (
-                <EmptyState icon={History} message="Nenhuma movimentação de pontos ainda." />
+                <EmptyState icon={History} message="No point activity yet." />
               ) : (
                 <table className="w-full text-sm">
                   <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                     <tr>
-                      <th className="px-4 py-2 font-medium">Data</th>
-                      <th className="px-4 py-2 font-medium">Tipo</th>
-                      <th className="px-4 py-2 font-medium">Pontos</th>
+                      <th className="px-4 py-2 font-medium">Date</th>
+                      <th className="px-4 py-2 font-medium">Type</th>
+                      <th className="px-4 py-2 font-medium">Points</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -230,7 +230,7 @@ function CustomerLookup() {
 export default function FidelidadePage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Fidelidade</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Loyalty</h1>
       <ProgramSettings />
       <CustomerLookup />
     </>

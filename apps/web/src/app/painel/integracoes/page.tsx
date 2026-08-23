@@ -29,15 +29,15 @@ import { SkeletonRows } from '@/components/ui/skeleton';
 const API_KEY_ROLES: Role[] = ['owner', 'admin', 'financeiro', 'operador_caixa'];
 
 const LISTING_STATUS_BADGE: Record<'nao_sincronizado' | 'pending' | 'synced' | 'error', { label: string; variant: BadgeVariant }> = {
-  nao_sincronizado: { label: 'Não sincronizado', variant: 'neutral' },
-  pending: { label: 'Pendente', variant: 'neutral' },
-  synced: { label: 'Sincronizado', variant: 'success' },
-  error: { label: 'Erro', variant: 'danger' },
+  nao_sincronizado: { label: 'Not synced', variant: 'neutral' },
+  pending: { label: 'Pending', variant: 'neutral' },
+  synced: { label: 'Synced', variant: 'success' },
+  error: { label: 'Error', variant: 'danger' },
 };
 
 const ORDER_STATUS_BADGE: Record<MarketplaceOrder['status'], { label: string; variant: BadgeVariant }> = {
-  imported: { label: 'Importado', variant: 'success' },
-  needs_attention: { label: 'Requer atenção', variant: 'warning' },
+  imported: { label: 'Imported', variant: 'success' },
+  needs_attention: { label: 'Needs attention', variant: 'warning' },
 };
 
 export default function IntegracoesPage() {
@@ -96,10 +96,10 @@ export default function IntegracoesPage() {
       setNewChannelName('');
       queryClient.invalidateQueries({ queryKey: ['marketplace', 'channels'] });
       setSelectedChannelId(channel.id);
-      toast.success('Integração criada (sandbox)');
+      toast.success('Integration created (sandbox)');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao criar integração');
+      toast.error(error instanceof ApiError ? error.message : 'Error creating integration');
     },
   });
 
@@ -108,10 +108,10 @@ export default function IntegracoesPage() {
       apiFetch<MarketplaceChannel>(`/marketplace/channels/${id}`, { method: 'PATCH', accessToken: accessToken!, body: { active } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace', 'channels'] });
-      toast.success('Integração atualizada');
+      toast.success('Integration updated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao atualizar integração');
+      toast.error(error instanceof ApiError ? error.message : 'Error updating integration');
     },
   });
 
@@ -120,10 +120,10 @@ export default function IntegracoesPage() {
       apiFetch(`/marketplace/channels/${selectedChannelId}/listings/${productId}/sync`, { method: 'POST', accessToken: accessToken! }),
     onSuccess: () => {
       invalidateChannel();
-      toast.success('Produto sincronizado');
+      toast.success('Product synced');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao sincronizar produto');
+      toast.error(error instanceof ApiError ? error.message : 'Error syncing product');
     },
   });
 
@@ -132,15 +132,15 @@ export default function IntegracoesPage() {
     onSuccess: (result) => {
       invalidateChannel();
       if (result.fetched === 0) {
-        toast.success('Nenhum pedido novo no canal');
+        toast.success('No new orders in this channel');
       } else if (result.needsAttention > 0) {
-        toast.error(`${result.imported} pedido(s) importado(s), ${result.needsAttention} precisam de atenção`);
+        toast.error(`${result.imported} order(s) imported, ${result.needsAttention} need attention`);
       } else {
-        toast.success(`${result.imported} pedido(s) importado(s)`);
+        toast.success(`${result.imported} order(s) imported`);
       }
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao buscar pedidos');
+      toast.error(error instanceof ApiError ? error.message : 'Error fetching orders');
     },
   });
 
@@ -164,7 +164,7 @@ export default function IntegracoesPage() {
       queryClient.invalidateQueries({ queryKey: ['api-keys'] });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao criar chave de API');
+      toast.error(error instanceof ApiError ? error.message : 'Error creating API key');
     },
   });
 
@@ -172,19 +172,19 @@ export default function IntegracoesPage() {
     mutationFn: (id: string) => apiFetch(`/api-keys/${id}`, { method: 'DELETE', accessToken: accessToken! }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-keys'] });
-      toast.success('Chave de API revogada');
+      toast.success('API key revoked');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao revogar chave de API');
+      toast.error(error instanceof ApiError ? error.message : 'Error revoking API key');
     },
   });
 
   async function copyRawKey(rawKey: string) {
     try {
       await navigator.clipboard.writeText(rawKey);
-      toast.success('Chave copiada');
+      toast.success('Key copied');
     } catch {
-      toast.error('Não foi possível copiar automaticamente — selecione e copie manualmente');
+      toast.error('Could not copy automatically — select and copy manually');
     }
   }
 
@@ -195,9 +195,9 @@ export default function IntegracoesPage() {
   if (!canManage) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
         <Card>
-          <p className="text-sm text-muted">Configurar integrações de e-commerce/marketplace é restrito a administradores.</p>
+          <p className="text-sm text-muted">Configuring e-commerce/marketplace integrations is restricted to administrators.</p>
         </Card>
       </>
     );
@@ -208,19 +208,19 @@ export default function IntegracoesPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Integrações</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
       <p className="text-sm text-muted">
-        Conecte canais de e-commerce/marketplace (sandbox — sem credenciais reais ainda) para publicar produtos e importar
-        pedidos, mantendo o estoque consistente entre o PDV e as vendas online.
+        Connect e-commerce/marketplace channels (sandbox — no real credentials yet) to publish products and import
+        orders, keeping stock consistent between the POS and online sales.
       </p>
 
       <Card className="flex items-end gap-2">
         <div className="flex flex-1 flex-col gap-1.5">
-          <label className="text-sm">Nova integração (sandbox)</label>
-          <Input placeholder="Ex.: Loja no Mercado Livre" value={newChannelName} onChange={(e) => setNewChannelName(e.target.value)} />
+          <label className="text-sm">New integration (sandbox)</label>
+          <Input placeholder="E.g.: Mercado Livre store" value={newChannelName} onChange={(e) => setNewChannelName(e.target.value)} />
         </div>
         <Button loading={createChannelMutation.isPending} disabled={!newChannelName} onClick={() => createChannelMutation.mutate()}>
-          Conectar
+          Connect
         </Button>
       </Card>
 
@@ -228,12 +228,12 @@ export default function IntegracoesPage() {
         {!channelsQuery.data ? (
           <SkeletonRows rows={2} cols={2} />
         ) : channelsQuery.data.length === 0 ? (
-          <EmptyState icon={Plug} message="Nenhuma integração conectada ainda." />
+          <EmptyState icon={Plug} message="No integrations connected yet." />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-2 font-medium">Canal</th>
+                <th className="px-4 py-2 font-medium">Channel</th>
                 <th className="px-4 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
@@ -252,7 +252,7 @@ export default function IntegracoesPage() {
                     </span>
                   </td>
                   <td className="px-4 py-2">
-                    <Badge variant={channel.active ? 'success' : 'neutral'}>{channel.active ? 'Ativa' : 'Inativa'}</Badge>
+                    <Badge variant={channel.active ? 'success' : 'neutral'}>{channel.active ? 'Active' : 'Inactive'}</Badge>
                   </td>
                   <td className="px-4 py-2 text-right">
                     <button
@@ -264,7 +264,7 @@ export default function IntegracoesPage() {
                         toggleChannelMutation.mutate({ id: channel.id, active: !channel.active });
                       }}
                     >
-                      {channel.active ? 'Desativar' : 'Reativar'}
+                      {channel.active ? 'Deactivate' : 'Reactivate'}
                     </button>
                   </td>
                 </tr>
@@ -280,20 +280,20 @@ export default function IntegracoesPage() {
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-1.5 text-sm font-medium">
                 <PackageSearch className="h-4 w-4" />
-                Produtos — {selectedChannel.name}
+                Products — {selectedChannel.name}
               </h2>
             </div>
             <div className="overflow-x-auto rounded-lg border border-border">
               {!productsQuery.data || !listingsQuery.data ? (
                 <SkeletonRows rows={3} cols={4} />
               ) : productsQuery.data.filter((p) => p.active).length === 0 ? (
-                <EmptyState icon={PackageSearch} message="Nenhum produto ativo cadastrado ainda." />
+                <EmptyState icon={PackageSearch} message="No active products registered yet." />
               ) : (
                 <table className="w-full text-sm">
                   <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                     <tr>
-                      <th className="px-4 py-2 font-medium">Produto</th>
-                      <th className="px-4 py-2 font-medium">Preço</th>
+                      <th className="px-4 py-2 font-medium">Product</th>
+                      <th className="px-4 py-2 font-medium">Price</th>
                       <th className="px-4 py-2 font-medium">Status</th>
                       <th className="px-4 py-2 font-medium"></th>
                     </tr>
@@ -320,7 +320,7 @@ export default function IntegracoesPage() {
                                 loading={syncProductMutation.isPending && syncProductMutation.variables === product.id}
                                 onClick={() => syncProductMutation.mutate(product.id)}
                               >
-                                {listing ? 'Sincronizar novamente' : 'Sincronizar'}
+                                {listing ? 'Sync again' : 'Sync'}
                               </Button>
                             </td>
                           </tr>
@@ -336,24 +336,24 @@ export default function IntegracoesPage() {
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-1.5 text-sm font-medium">
                 <ShoppingBag className="h-4 w-4" />
-                Pedidos importados — {selectedChannel.name}
+                Imported orders — {selectedChannel.name}
               </h2>
               <Button variant="secondary" loading={pullOrdersMutation.isPending} onClick={() => pullOrdersMutation.mutate()}>
                 <RefreshCw className="h-4 w-4" />
-                Buscar novos pedidos
+                Fetch new orders
               </Button>
             </div>
             <div className="overflow-x-auto rounded-lg border border-border">
               {!ordersQuery.data ? (
                 <SkeletonRows rows={2} cols={3} />
               ) : ordersQuery.data.length === 0 ? (
-                <EmptyState icon={ShoppingBag} message="Nenhum pedido importado ainda." />
+                <EmptyState icon={ShoppingBag} message="No orders imported yet." />
               ) : (
                 <table className="w-full text-sm">
                   <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                     <tr>
-                      <th className="px-4 py-2 font-medium">Pedido</th>
-                      <th className="px-4 py-2 font-medium">Valor</th>
+                      <th className="px-4 py-2 font-medium">Order</th>
+                      <th className="px-4 py-2 font-medium">Amount</th>
                       <th className="px-4 py-2 font-medium">Status</th>
                     </tr>
                   </thead>
@@ -377,7 +377,7 @@ export default function IntegracoesPage() {
                           {order.status === 'imported' && (
                             <span className="mt-1 flex items-center gap-1 text-xs text-muted">
                               <CheckCircle2 className="h-3 w-3" />
-                              estoque atualizado
+                              stock updated
                             </span>
                           )}
                         </td>
@@ -395,13 +395,13 @@ export default function IntegracoesPage() {
         <div>
           <h2 className="flex items-center gap-1.5 text-lg font-semibold tracking-tight">
             <Key className="h-4 w-4" />
-            Chaves de API
+            API keys
           </h2>
           <p className="text-sm text-muted">
-            Gere uma chave pra um sistema externo consumir a API do PCAARB diretamente (documentação interativa em{' '}
-            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">/api/docs</code>). A chave age com as
-            mesmas permissões do papel escolhido — as mesmas regras que valem pra um usuário logado. Use só em servidor —
-            nunca em código que roda no navegador do cliente final.
+            Generate a key for an external system to consume the PCAARB API directly (interactive documentation at{' '}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">/api/docs</code>). The key acts with
+            the same permissions as the chosen role — the same rules that apply to a logged-in user. Use it server-side
+            only — never in code that runs in the end customer&apos;s browser.
           </p>
         </div>
 
@@ -409,7 +409,7 @@ export default function IntegracoesPage() {
           <Card className="flex flex-col gap-2 border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
             <p className="flex items-center gap-1.5 text-sm font-medium text-amber-800 dark:text-amber-400">
               <AlertTriangle className="h-4 w-4" />
-              Guarde esta chave agora — ela não será exibida de novo.
+              Save this key now — it will not be shown again.
             </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 overflow-x-auto rounded-md border border-amber-300 bg-white px-3 py-2 text-xs dark:border-amber-800 dark:bg-zinc-950">
@@ -417,7 +417,7 @@ export default function IntegracoesPage() {
               </code>
               <Button variant="secondary" onClick={() => copyRawKey(justCreatedKey.rawKey)}>
                 <Copy className="h-4 w-4" />
-                Copiar
+                Copy
               </Button>
             </div>
             <button
@@ -425,18 +425,18 @@ export default function IntegracoesPage() {
               className="self-start text-xs text-muted hover:underline"
               onClick={() => setJustCreatedKey(null)}
             >
-              Já guardei, fechar
+              I have saved it, close
             </button>
           </Card>
         )}
 
         <Card className="flex flex-wrap items-end gap-2">
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-            <label className="text-sm">Nome</label>
-            <Input placeholder="Ex.: Integração contábil" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} />
+            <label className="text-sm">Name</label>
+            <Input placeholder="E.g.: Accounting integration" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Papel</label>
+            <label className="text-sm">Role</label>
             <select
               className="h-10 rounded-md border border-border bg-card px-3 text-sm"
               value={newKeyRole}
@@ -450,7 +450,7 @@ export default function IntegracoesPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Expira em (opcional)</label>
+            <label className="text-sm">Expires on (optional)</label>
             <input
               type="date"
               className="h-10 rounded-md border border-border bg-card px-3 text-sm"
@@ -459,7 +459,7 @@ export default function IntegracoesPage() {
             />
           </div>
           <Button loading={createApiKeyMutation.isPending} disabled={!newKeyName} onClick={() => createApiKeyMutation.mutate()}>
-            Gerar chave
+            Generate key
           </Button>
         </Card>
 
@@ -467,15 +467,15 @@ export default function IntegracoesPage() {
           {!apiKeysQuery.data ? (
             <SkeletonRows rows={2} cols={4} />
           ) : apiKeysQuery.data.length === 0 ? (
-            <EmptyState icon={Key} message="Nenhuma chave de API criada ainda." />
+            <EmptyState icon={Key} message="No API keys created yet." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Nome</th>
-                  <th className="px-4 py-2 font-medium">Chave</th>
-                  <th className="px-4 py-2 font-medium">Papel</th>
-                  <th className="px-4 py-2 font-medium">Último uso</th>
+                  <th className="px-4 py-2 font-medium">Name</th>
+                  <th className="px-4 py-2 font-medium">Key</th>
+                  <th className="px-4 py-2 font-medium">Role</th>
+                  <th className="px-4 py-2 font-medium">Last used</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
@@ -491,15 +491,15 @@ export default function IntegracoesPage() {
                       </td>
                       <td className="px-4 py-2">{ROLE_LABELS[key.role]}</td>
                       <td className="px-4 py-2 text-muted">
-                        {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString('pt-BR') : 'Nunca usada'}
+                        {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString('pt-BR') : 'Never used'}
                       </td>
                       <td className="px-4 py-2">
                         {key.revokedAt ? (
-                          <Badge variant="neutral">Revogada</Badge>
+                          <Badge variant="neutral">Revoked</Badge>
                         ) : expired ? (
-                          <Badge variant="warning">Expirada</Badge>
+                          <Badge variant="warning">Expired</Badge>
                         ) : (
-                          <Badge variant="success">Ativa</Badge>
+                          <Badge variant="success">Active</Badge>
                         )}
                       </td>
                       <td className="px-4 py-2 text-right">
@@ -510,7 +510,7 @@ export default function IntegracoesPage() {
                             disabled={revokeApiKeyMutation.isPending}
                             onClick={() => revokeApiKeyMutation.mutate(key.id)}
                           >
-                            Revogar
+                            Revoke
                           </button>
                         )}
                       </td>

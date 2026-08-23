@@ -57,10 +57,10 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
       }),
     onSuccess: () => {
       invalidate();
-      toast.success('Exceção de permissão salva');
+      toast.success('Permission exception saved');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao salvar exceção de permissão');
+      toast.error(error instanceof ApiError ? error.message : 'Error saving permission exception');
     },
   });
 
@@ -69,14 +69,14 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
       apiFetch(`/users/${userId}/permission-overrides/${overrideId}`, { method: 'DELETE', accessToken: accessToken! }),
     onSuccess: () => {
       invalidate();
-      toast.success('Exceção removida');
+      toast.success('Exception removed');
     },
   });
 
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-muted">
-        Exceções pontuais além do papel — concedem ou revogam uma permissão específica sem trocar o papel do usuário.
+        One-off exceptions on top of the role — grant or revoke a specific permission without changing the user&apos;s role.
       </p>
 
       {overridesQuery.data && overridesQuery.data.length > 0 && (
@@ -99,7 +99,7 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
                   className="text-muted hover:text-red-600"
                   disabled={removeMutation.isPending}
                   onClick={() => removeMutation.mutate(override.id)}
-                  aria-label="Remover"
+                  aria-label="Remove"
                 >
                   ×
                 </button>
@@ -111,7 +111,7 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
 
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs">Módulo</label>
+          <label className="text-xs">Module</label>
           <select
             className="h-9 rounded-md border border-border bg-card px-2 text-sm"
             value={subject}
@@ -125,7 +125,7 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs">Ação</label>
+          <label className="text-xs">Action</label>
           <select
             className="h-9 rounded-md border border-border bg-card px-2 text-sm"
             value={action}
@@ -139,14 +139,14 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs">Efeito</label>
+          <label className="text-xs">Effect</label>
           <select
             className="h-9 rounded-md border border-border bg-card px-2 text-sm"
             value={effect}
             onChange={(e) => setEffect(e.target.value as 'allow' | 'deny')}
           >
-            <option value="allow">Conceder</option>
-            <option value="deny">Revogar</option>
+            <option value="allow">Grant</option>
+            <option value="deny">Revoke</option>
           </select>
         </div>
         <Button
@@ -156,7 +156,7 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
           onClick={() => createMutation.mutate()}
         >
           <Plus className="h-4 w-4" />
-          Adicionar
+          Add
         </Button>
       </div>
     </div>
@@ -202,7 +202,7 @@ export default function UsuariosPage() {
     onSuccess: (invite) => {
       reset({ role: 'operador_caixa', email: '' });
       invalidateAll();
-      toast.success(`Convite enviado para ${invite.email}`);
+      toast.success(`Invite sent to ${invite.email}`);
     },
     onError: (error) => {
       if (error instanceof ApiError) {
@@ -215,7 +215,7 @@ export default function UsuariosPage() {
     mutationFn: (id: string) => apiFetch(`/users/invites/${id}`, { method: 'DELETE', accessToken: accessToken! }),
     onSuccess: () => {
       invalidateAll();
-      toast.success('Convite revogado');
+      toast.success('Invite revoked');
     },
   });
 
@@ -224,10 +224,10 @@ export default function UsuariosPage() {
       apiFetch(`/users/${id}/role`, { method: 'PATCH', accessToken: accessToken!, body: { role } }),
     onSuccess: () => {
       invalidateAll();
-      toast.success('Papel atualizado');
+      toast.success('Role updated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro inesperado ao atualizar o papel');
+      toast.error(error instanceof ApiError ? error.message : 'Unexpected error updating the role');
     },
   });
 
@@ -235,10 +235,10 @@ export default function UsuariosPage() {
     mutationFn: (id: string) => apiFetch(`/users/${id}`, { method: 'DELETE', accessToken: accessToken! }),
     onSuccess: () => {
       invalidateAll();
-      toast.success('Usuário desativado');
+      toast.success('User deactivated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao desativar usuário');
+      toast.error(error instanceof ApiError ? error.message : 'Error deactivating user');
     },
   });
 
@@ -248,21 +248,21 @@ export default function UsuariosPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Usuários</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
 
       <Card as="form" className="flex flex-col gap-4" onSubmit={handleSubmit((values) => inviteMutation.mutate(values))}>
         <h2 className="flex items-center gap-2 text-sm font-medium">
           <UserPlus className="h-4 w-4" />
-          Convidar usuário
+          Invite user
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">E-mail</label>
+            <label className="text-sm">Email</label>
             <Input type="email" {...register('email')} />
             {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Papel</label>
+            <label className="text-sm">Role</label>
             <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('role')}>
               {Object.entries(ROLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -274,7 +274,7 @@ export default function UsuariosPage() {
         </div>
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
         <Button type="submit" loading={inviteMutation.isPending} className="self-start">
-          Enviar convite
+          Send invite
         </Button>
       </Card>
 
@@ -288,15 +288,15 @@ export default function UsuariosPage() {
           >
             <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
               <Mail className="h-3.5 w-3.5" />
-              Convites pendentes
+              Pending invites
             </h2>
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                   <tr>
-                    <th className="px-4 py-2 font-medium">E-mail</th>
-                    <th className="px-4 py-2 font-medium">Papel</th>
-                    <th className="px-4 py-2 font-medium">Expira em</th>
+                    <th className="px-4 py-2 font-medium">Email</th>
+                    <th className="px-4 py-2 font-medium">Role</th>
+                    <th className="px-4 py-2 font-medium">Expires</th>
                     <th className="px-4 py-2 font-medium"></th>
                   </tr>
                 </thead>
@@ -321,7 +321,7 @@ export default function UsuariosPage() {
                             disabled={revokeMutation.isPending}
                             onClick={() => revokeMutation.mutate(invite.id)}
                           >
-                            Revogar
+                            Revoke
                           </button>
                         </td>
                       </motion.tr>
@@ -335,7 +335,7 @@ export default function UsuariosPage() {
       </AnimatePresence>
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-muted">{usersQuery.data ? `${usersQuery.data.length} usuário(s)` : ''}</h2>
+        <h2 className="text-sm font-medium text-muted">{usersQuery.data ? `${usersQuery.data.length} user(s)` : ''}</h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!usersQuery.data ? (
             <SkeletonRows rows={3} cols={5} />
@@ -343,9 +343,9 @@ export default function UsuariosPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Nome</th>
-                  <th className="px-4 py-2 font-medium">E-mail</th>
-                  <th className="px-4 py-2 font-medium">Papel</th>
+                  <th className="px-4 py-2 font-medium">Name</th>
+                  <th className="px-4 py-2 font-medium">Email</th>
+                  <th className="px-4 py-2 font-medium">Role</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
@@ -371,7 +371,7 @@ export default function UsuariosPage() {
                         </select>
                       </td>
                       <td className="px-4 py-2">
-                        <Badge variant={user.active ? 'success' : 'neutral'}>{user.active ? 'Ativo' : 'Inativo'}</Badge>
+                        <Badge variant={user.active ? 'success' : 'neutral'}>{user.active ? 'Active' : 'Inactive'}</Badge>
                       </td>
                       <td className="px-4 py-2 text-right">
                         <div className="flex justify-end gap-3">
@@ -382,7 +382,7 @@ export default function UsuariosPage() {
                               onClick={() => setExpandedUserId(expandedUserId === user.id ? null : user.id)}
                             >
                               <KeyRound className="h-3.5 w-3.5" />
-                              Permissões
+                              Permissions
                             </button>
                           )}
                           {user.active && user.id !== meQuery.data?.user.id && (
@@ -392,7 +392,7 @@ export default function UsuariosPage() {
                               disabled={deactivateMutation.isPending}
                               onClick={() => deactivateMutation.mutate(user.id)}
                             >
-                              Desativar
+                              Deactivate
                             </button>
                           )}
                         </div>
@@ -417,7 +417,7 @@ export default function UsuariosPage() {
               </tbody>
             </table>
           )}
-          {usersQuery.data?.length === 0 && <EmptyState icon={Users} message="Nenhum usuário cadastrado ainda." />}
+          {usersQuery.data?.length === 0 && <EmptyState icon={Users} message="No users registered yet." />}
         </div>
       </div>
     </>

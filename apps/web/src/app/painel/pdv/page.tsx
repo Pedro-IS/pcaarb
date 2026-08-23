@@ -38,9 +38,9 @@ interface PaymentLine {
 }
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  dinheiro: 'Dinheiro',
-  cartao_credito: 'Cartão de crédito',
-  cartao_debito: 'Cartão de débito',
+  dinheiro: 'Cash',
+  cartao_credito: 'Credit card',
+  cartao_debito: 'Debit card',
   pix: 'Pix',
 };
 
@@ -155,10 +155,10 @@ export default function PdvPage() {
     }
 
     if (syncedCount > 0) {
-      toast.success(`${syncedCount} venda(s) offline sincronizada(s)`);
+      toast.success(`${syncedCount} offline sale(s) synced`);
     }
     if (attentionCount > 0) {
-      toast.error(`${attentionCount} venda(s) offline não puderam ser sincronizadas — veja os detalhes na tela`);
+      toast.error(`${attentionCount} offline sale(s) could not be synced — see details on screen`);
     }
     if (syncedCount > 0 || attentionCount > 0) {
       queryClient.invalidateQueries({ queryKey: ['offline-sale-queue'] });
@@ -178,7 +178,7 @@ export default function PdvPage() {
   async function discardAttentionSale(clientSaleId: string) {
     await removeOfflineSale(clientSaleId);
     queryClient.invalidateQueries({ queryKey: ['offline-sale-queue'] });
-    toast.success('Venda pendente descartada');
+    toast.success('Pending sale discarded');
   }
 
   const sessionQuery = useQuery({
@@ -238,10 +238,10 @@ export default function PdvPage() {
     onSuccess: () => {
       setOpeningAmount('');
       queryClient.invalidateQueries({ queryKey: ['current-cash-session'] });
-      toast.success('Caixa aberto');
+      toast.success('Register opened');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao abrir o caixa');
+      toast.error(error instanceof ApiError ? error.message : 'Error opening the register');
     },
   });
 
@@ -404,7 +404,7 @@ export default function PdvPage() {
         setLastSale(outcome.sale);
         queryClient.invalidateQueries({ queryKey: ['loyalty-balance', selectedCustomerId] });
       } else {
-        toast.success('Sem conexão — venda salva no dispositivo. Será enviada automaticamente quando a internet voltar.');
+        toast.success('No connection — sale saved on this device. It will be sent automatically once the internet is back.');
         queryClient.invalidateQueries({ queryKey: ['offline-sale-queue'] });
       }
       setCart([]);
@@ -414,7 +414,7 @@ export default function PdvPage() {
       setSaleError(null);
     },
     onError: (error) => {
-      setSaleError(error instanceof ApiError ? error.message : 'Erro inesperado ao registrar a venda');
+      setSaleError(error instanceof ApiError ? error.message : 'Unexpected error recording the sale');
     },
   });
 
@@ -429,7 +429,7 @@ export default function PdvPage() {
     onSuccess: () => {
       setClosingAmount('');
       queryClient.invalidateQueries({ queryKey: ['current-cash-session'] });
-      toast.success('Caixa fechado');
+      toast.success('Register closed');
     },
   });
 
@@ -450,7 +450,7 @@ export default function PdvPage() {
     onSuccess: () => {
       setMovementAmount('');
       setMovementReason('');
-      toast.success(movementType === 'sangria' ? 'Sangria registrada' : 'Suprimento registrado');
+      toast.success(movementType === 'sangria' ? 'Cash withdrawal recorded' : 'Cash deposit recorded');
     },
   });
 
@@ -460,22 +460,22 @@ export default function PdvPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">PDV</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">POS</h1>
 
       {!sessionQuery.data ? (
         <Card className="flex flex-col gap-4">
-          <h2 className="font-medium">Abrir caixa</h2>
-          <p className="text-sm text-muted">Informe o valor em dinheiro que está começando no caixa.</p>
+          <h2 className="font-medium">Open register</h2>
+          <p className="text-sm text-muted">Enter the cash amount you are starting the register with.</p>
           <div className="flex items-end gap-2">
             {activeStores.length > 1 && (
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm">Loja</label>
+                <label className="text-sm">Store</label>
                 <select
                   className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                   value={selectedStoreId}
                   onChange={(e) => setSelectedStoreId(e.target.value)}
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">Select...</option>
                   {activeStores.map((store) => (
                     <option key={store.id} value={store.id}>
                       {store.name}
@@ -485,9 +485,9 @@ export default function PdvPage() {
               </div>
             )}
             <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-sm">Valor de abertura (R$)</label>
+              <label className="text-sm">Opening amount (R$)</label>
               <Input
-                placeholder="0,00"
+                placeholder="0.00"
                 value={openingAmount}
                 onChange={(e) => setOpeningAmount(e.target.value)}
               />
@@ -497,30 +497,30 @@ export default function PdvPage() {
               disabled={!effectiveStoreId}
               onClick={() => openSessionMutation.mutate()}
             >
-              Abrir caixa
+              Open register
             </Button>
           </div>
         </Card>
       ) : (
         <>
           <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm dark:border-green-900 dark:bg-green-950">
-            <span>Caixa aberto — abertura {formatCentsToBRL(sessionQuery.data.openingAmountCents)}</span>
+            <span>Register open — opened with {formatCentsToBRL(sessionQuery.data.openingAmountCents)}</span>
             <div className="flex items-center gap-2">
               {!isOnline && (
                 <Badge variant="warning" className="flex items-center gap-1">
                   <WifiOff className="h-3 w-3" />
-                  Sem conexão
+                  No connection
                 </Badge>
               )}
-              <Badge variant="success">Aberto</Badge>
+              <Badge variant="success">Open</Badge>
             </div>
           </div>
 
           {!isOnline && (
             <p className="flex items-center gap-1.5 text-xs text-muted">
               <CloudOff className="h-3.5 w-3.5" />
-              Vendas continuam funcionando offline — ficam salvas neste dispositivo e são enviadas automaticamente quando a
-              internet voltar. Preços e estoque exibidos são os últimos conhecidos
+              Sales keep working offline — they are saved on this device and sent automatically once the internet is
+              back. Prices and stock shown are the last known values
               {productsQuery.dataUpdatedAt ? ` (${new Date(productsQuery.dataUpdatedAt).toLocaleTimeString('pt-BR')})` : ''}.
             </p>
           )}
@@ -529,19 +529,19 @@ export default function PdvPage() {
             <Card className="flex flex-col gap-3">
               <h2 className="flex items-center gap-1.5 text-sm font-medium">
                 <CloudOff className="h-4 w-4" />
-                Vendas offline
+                Offline sales
               </h2>
               {pendingSales.length > 0 && (
                 <p className="text-sm text-muted">
-                  {pendingSales.length} venda(s) aguardando conexão pra sincronizar
-                  {isOnline ? ' (tentando agora)...' : '.'}
+                  {pendingSales.length} sale(s) waiting for a connection to sync
+                  {isOnline ? ' (retrying now)...' : '.'}
                 </p>
               )}
               {attentionSales.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="flex items-center gap-1.5 text-sm text-amber-700 dark:text-amber-500">
                     <AlertTriangle className="h-3.5 w-3.5" />
-                    {attentionSales.length} venda(s) offline não puderam ser sincronizadas — precisam de atenção:
+                    {attentionSales.length} offline sale(s) could not be synced — they need attention:
                   </p>
                   {attentionSales.map((sale) => (
                     <div
@@ -550,7 +550,7 @@ export default function PdvPage() {
                     >
                       <div className="flex flex-col gap-0.5">
                         <span>
-                          Venda de {new Date(sale.queuedAt).toLocaleString('pt-BR')} —{' '}
+                          Sale from {new Date(sale.queuedAt).toLocaleString('pt-BR')} —{' '}
                           {formatSaleQueueTotal(sale)}
                         </span>
                         <span className="text-amber-700 dark:text-amber-500">{sale.lastError}</span>
@@ -560,7 +560,7 @@ export default function PdvPage() {
                         className="shrink-0 text-red-600 hover:underline"
                         onClick={() => discardAttentionSale(sale.clientSaleId)}
                       >
-                        Descartar
+                        Discard
                       </button>
                     </div>
                   ))}
@@ -580,28 +580,28 @@ export default function PdvPage() {
                   <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
                   <div className="flex flex-col gap-1">
                     <span>
-                      Venda registrada: {formatCentsToBRL(lastSale.totalCents)} ({lastSale.items.length} ite
-                      {lastSale.items.length === 1 ? 'm' : 'ns'})
+                      Sale recorded: {formatCentsToBRL(lastSale.totalCents)} ({lastSale.items.length} item
+                      {lastSale.items.length === 1 ? '' : 's'})
                     </span>
                     {lastSale.fiscalDocument?.status === 'authorized' && (
                       <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                        NFC-e autorizada (sandbox) — chave {lastSale.fiscalDocument.accessKey}
+                        NFC-e authorized (sandbox) — key {lastSale.fiscalDocument.accessKey}
                       </span>
                     )}
                     {lastSale.fiscalDocument?.status === 'rejected' && (
                       <span className="text-xs text-amber-700 dark:text-amber-500">
-                        NFC-e não emitida: {lastSale.fiscalDocument.rejectionReason}. Reemita depois em Vendas.
+                        NFC-e not issued: {lastSale.fiscalDocument.rejectionReason}. Reissue it later from Sales.
                       </span>
                     )}
                     {lastSale.pointsEarned > 0 && (
                       <span className="flex items-center gap-1 text-xs text-zinc-600 dark:text-zinc-400">
                         <Gift className="h-3.5 w-3.5" />
-                        Cliente ganhou {lastSale.pointsEarned} ponto(s) de fidelidade
+                        Customer earned {lastSale.pointsEarned} loyalty point(s)
                       </span>
                     )}
                   </div>
                   <Button variant="secondary" className="ml-auto shrink-0" onClick={() => window.print()}>
-                    Imprimir cupom
+                    Print receipt
                   </Button>
                 </div>
               </motion.div>
@@ -617,10 +617,10 @@ export default function PdvPage() {
           )}
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium">Nova venda</h2>
+            <h2 className="text-sm font-medium">New sale</h2>
 
             <div className="flex flex-col gap-1.5 sm:w-80">
-              <label className="text-sm">Cliente (opcional)</label>
+              <label className="text-sm">Customer (optional)</label>
               <select
                 className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                 value={selectedCustomerId}
@@ -629,7 +629,7 @@ export default function PdvPage() {
                   setPointsToRedeemInput('');
                 }}
               >
-                <option value="">Sem cliente identificado</option>
+                <option value="">No customer identified</option>
                 {customersQuery.data?.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.name}
@@ -639,7 +639,7 @@ export default function PdvPage() {
               {selectedCustomerId && customerBalanceQuery.data && (
                 <p className="flex items-center gap-1 text-xs text-muted">
                   <Gift className="h-3.5 w-3.5" />
-                  {customerBalanceQuery.data.balancePoints} ponto(s) disponível(is) — vale{' '}
+                  {customerBalanceQuery.data.balancePoints} point(s) available — worth{' '}
                   {formatCentsToBRL(customerBalanceQuery.data.balanceValueCents)}
                 </p>
               )}
@@ -647,13 +647,13 @@ export default function PdvPage() {
 
             <div className="flex items-end gap-2">
               <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm">Produto</label>
+                <label className="text-sm">Product</label>
                 <select
                   className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                   value={selectedProductId}
                   onChange={(e) => setSelectedProductId(e.target.value)}
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">Select...</option>
                   {productsQuery.data
                     ?.filter((p) => p.active)
                     .map((product) => (
@@ -665,16 +665,16 @@ export default function PdvPage() {
               </div>
               <Button type="button" variant="secondary" onClick={addToCart} disabled={!selectedProductId}>
                 <Plus className="h-4 w-4" />
-                Adicionar
+                Add
               </Button>
             </div>
 
             <table className="w-full text-sm">
               <thead className="text-left text-muted">
                 <tr>
-                  <th className="py-1">Produto</th>
-                  <th className="py-1">Qtd.</th>
-                  <th className="py-1">Preço</th>
+                  <th className="py-1">Product</th>
+                  <th className="py-1">Qty.</th>
+                  <th className="py-1">Price</th>
                   <th className="py-1">Total</th>
                   <th className="py-1" />
                 </tr>
@@ -699,7 +699,7 @@ export default function PdvPage() {
                           type="button"
                           className="text-red-600 transition-colors hover:text-red-500"
                           onClick={() => removeFromCart(line.productId)}
-                          aria-label="Remover"
+                          aria-label="Remove"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -709,16 +709,16 @@ export default function PdvPage() {
                 </AnimatePresence>
               </tbody>
             </table>
-            {cart.length === 0 && <EmptyState icon={ShoppingCart} message="Carrinho vazio" />}
+            {cart.length === 0 && <EmptyState icon={ShoppingCart} message="Empty cart" />}
 
             <div className="flex flex-col gap-1.5 self-end sm:w-64">
-              <label className="text-sm">Desconto (R$)</label>
-              <Input placeholder="0,00" value={discountReais} onChange={(e) => setDiscountReais(e.target.value)} />
+              <label className="text-sm">Discount (R$)</label>
+              <Input placeholder="0.00" value={discountReais} onChange={(e) => setDiscountReais(e.target.value)} />
             </div>
 
             {selectedCustomerId && !!customerBalanceQuery.data?.balancePoints && (
               <div className="flex flex-col gap-1.5 self-end sm:w-64">
-                <label className="text-sm">Resgatar pontos (máx. {customerBalanceQuery.data.balancePoints})</label>
+                <label className="text-sm">Redeem points (max. {customerBalanceQuery.data.balancePoints})</label>
                 <Input
                   type="number"
                   min={0}
@@ -728,7 +728,7 @@ export default function PdvPage() {
                   onChange={(e) => setPointsToRedeemInput(e.target.value)}
                 />
                 {pointsToRedeem > 0 && (
-                  <p className="text-xs text-muted">desconto de {formatCentsToBRL(redemptionValueCents)}</p>
+                  <p className="text-xs text-muted">discount of {formatCentsToBRL(redemptionValueCents)}</p>
                 )}
               </div>
             )}
@@ -740,7 +740,7 @@ export default function PdvPage() {
               </div>
               {redemptionValueCents > 0 && (
                 <div className="flex justify-between text-muted">
-                  <span>Resgate de pontos</span>
+                  <span>Points redeemed</span>
                   <span>-{formatCentsToBRL(redemptionValueCents)}</span>
                 </div>
               )}
@@ -752,10 +752,10 @@ export default function PdvPage() {
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">Pagamento</h3>
+                <h3 className="text-sm font-medium">Payment</h3>
                 <Button type="button" variant="secondary" onClick={addPaymentLine}>
                   <Plus className="h-4 w-4" />
-                  Forma de pagamento
+                  Payment method
                 </Button>
               </div>
               <AnimatePresence initial={false}>
@@ -769,7 +769,7 @@ export default function PdvPage() {
                     className="flex items-end gap-2"
                   >
                     <div className="flex flex-1 flex-col gap-1.5">
-                      <label className="text-sm">Método</label>
+                      <label className="text-sm">Method</label>
                       <select
                         className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                         value={payment.method}
@@ -783,9 +783,9 @@ export default function PdvPage() {
                       </select>
                     </div>
                     <div className="flex flex-1 flex-col gap-1.5">
-                      <label className="text-sm">Valor (R$)</label>
+                      <label className="text-sm">Amount (R$)</label>
                       <Input
-                        placeholder="0,00"
+                        placeholder="0.00"
                         value={payment.amountReais}
                         onChange={(e) => updatePayment(index, { amountReais: e.target.value })}
                       />
@@ -794,7 +794,7 @@ export default function PdvPage() {
                       type="button"
                       className="flex h-10 w-10 items-center justify-center text-red-600 transition-colors hover:text-red-500"
                       onClick={() => removePayment(index)}
-                      aria-label="Remover forma de pagamento"
+                      aria-label="Remove payment method"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -803,10 +803,10 @@ export default function PdvPage() {
               </AnimatePresence>
               <p className={`text-right text-sm ${remainingCents === 0 ? 'text-green-600' : 'text-muted'}`}>
                 {remainingCents > 0
-                  ? `Falta ${formatCentsToBRL(remainingCents)}`
+                  ? `${formatCentsToBRL(remainingCents)} remaining`
                   : remainingCents < 0
-                    ? `Excedente ${formatCentsToBRL(-remainingCents)}`
-                    : 'Pagamento completo'}
+                    ? `${formatCentsToBRL(-remainingCents)} over`
+                    : 'Payment complete'}
               </p>
             </div>
 
@@ -818,30 +818,30 @@ export default function PdvPage() {
               loading={createSaleMutation.isPending}
               onClick={() => createSaleMutation.mutate()}
             >
-              Finalizar venda
+              Finalize sale
             </Button>
           </Card>
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium">Sangria / suprimento</h2>
+            <h2 className="text-sm font-medium">Cash withdrawal / deposit</h2>
             <div className="flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm">Tipo</label>
+                <label className="text-sm">Type</label>
                 <select
                   className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                   value={movementType}
                   onChange={(e) => setMovementType(e.target.value as 'sangria' | 'suprimento')}
                 >
-                  <option value="sangria">Sangria (retirada)</option>
-                  <option value="suprimento">Suprimento (reforço)</option>
+                  <option value="sangria">Withdrawal</option>
+                  <option value="suprimento">Deposit</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm">Valor (R$)</label>
-                <Input placeholder="0,00" value={movementAmount} onChange={(e) => setMovementAmount(e.target.value)} />
+                <label className="text-sm">Amount (R$)</label>
+                <Input placeholder="0.00" value={movementAmount} onChange={(e) => setMovementAmount(e.target.value)} />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm">Motivo (opcional)</label>
+                <label className="text-sm">Reason (optional)</label>
                 <Input value={movementReason} onChange={(e) => setMovementReason(e.target.value)} />
               </div>
               <Button
@@ -850,17 +850,17 @@ export default function PdvPage() {
                 loading={addMovementMutation.isPending}
                 onClick={() => addMovementMutation.mutate()}
               >
-                Registrar
+                Record
               </Button>
             </div>
           </Card>
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium">Fechar caixa</h2>
+            <h2 className="text-sm font-medium">Close register</h2>
             <div className="flex items-end gap-2">
               <div className="flex flex-1 flex-col gap-1.5">
-                <label className="text-sm">Valor contado (R$)</label>
-                <Input placeholder="0,00" value={closingAmount} onChange={(e) => setClosingAmount(e.target.value)} />
+                <label className="text-sm">Counted amount (R$)</label>
+                <Input placeholder="0.00" value={closingAmount} onChange={(e) => setClosingAmount(e.target.value)} />
               </div>
               <Button
                 type="button"
@@ -868,7 +868,7 @@ export default function PdvPage() {
                 loading={closeSessionMutation.isPending}
                 onClick={() => closeSessionMutation.mutate()}
               >
-                Fechar caixa
+                Close register
               </Button>
             </div>
           </Card>

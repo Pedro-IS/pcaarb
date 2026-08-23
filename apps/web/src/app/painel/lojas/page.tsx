@@ -36,10 +36,10 @@ export default function LojasPage() {
     onSuccess: () => {
       setNewStoreName('');
       invalidate();
-      toast.success('Loja criada');
+      toast.success('Store created');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao criar loja');
+      toast.error(error instanceof ApiError ? error.message : 'Error creating store');
     },
   });
 
@@ -48,10 +48,10 @@ export default function LojasPage() {
       apiFetch<Store>(`/stores/${id}`, { method: 'PATCH', accessToken: accessToken!, body: { active } }),
     onSuccess: () => {
       invalidate();
-      toast.success('Loja atualizada');
+      toast.success('Store updated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao atualizar loja');
+      toast.error(error instanceof ApiError ? error.message : 'Error updating store');
     },
   });
 
@@ -61,20 +61,20 @@ export default function LojasPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Lojas</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Stores</h1>
 
       {canManage && (
         <Card className="flex items-end gap-2">
           <div className="flex flex-1 flex-col gap-1.5">
-            <label className="text-sm">Nova loja</label>
-            <Input placeholder="Nome da loja" value={newStoreName} onChange={(e) => setNewStoreName(e.target.value)} />
+            <label className="text-sm">New store</label>
+            <Input placeholder="Store name" value={newStoreName} onChange={(e) => setNewStoreName(e.target.value)} />
           </div>
           <Button loading={createMutation.isPending} disabled={!newStoreName} onClick={() => createMutation.mutate()}>
-            Adicionar
+            Add
           </Button>
         </Card>
       )}
-      <p className="text-xs text-muted">Operar mais de uma loja exige o plano Multi-loja — ver /painel/assinatura.</p>
+      <p className="text-xs text-muted">Operating more than one store requires the Multi-store plan — see /painel/assinatura.</p>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         {!storesQuery.data ? (
@@ -83,7 +83,7 @@ export default function LojasPage() {
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-2 font-medium">Loja</th>
+                <th className="px-4 py-2 font-medium">Store</th>
                 <th className="px-4 py-2 font-medium">Status</th>
                 {canManage && <th className="px-4 py-2 font-medium"></th>}
               </tr>
@@ -98,7 +98,7 @@ export default function LojasPage() {
                     </span>
                   </td>
                   <td className="px-4 py-2">
-                    <Badge variant={store.active ? 'success' : 'neutral'}>{store.active ? 'Ativa' : 'Inativa'}</Badge>
+                    <Badge variant={store.active ? 'success' : 'neutral'}>{store.active ? 'Active' : 'Inactive'}</Badge>
                   </td>
                   {canManage && (
                     <td className="px-4 py-2 text-right">
@@ -108,7 +108,7 @@ export default function LojasPage() {
                         disabled={toggleActiveMutation.isPending}
                         onClick={() => toggleActiveMutation.mutate({ id: store.id, active: !store.active })}
                       >
-                        {store.active ? 'Desativar' : 'Reativar'}
+                        {store.active ? 'Deactivate' : 'Reactivate'}
                       </button>
                     </td>
                   )}

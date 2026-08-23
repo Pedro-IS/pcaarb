@@ -67,18 +67,18 @@ function SettingsForm({ settings, canEdit }: { settings: CommissionSettings; can
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commission-settings'] });
       queryClient.invalidateQueries({ queryKey: ['reports', 'comissoes'] });
-      toast.success('Configuração de comissão atualizada');
+      toast.success('Commission settings updated');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao atualizar configuração');
+      toast.error(error instanceof ApiError ? error.message : 'Error updating settings');
     },
   });
 
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Comissão padrão</h2>
-        <Badge variant={active ? 'success' : 'neutral'}>{active ? 'Ativo' : 'Inativo'}</Badge>
+        <h2 className="text-sm font-medium">Default commission</h2>
+        <Badge variant={active ? 'success' : 'neutral'}>{active ? 'Active' : 'Inactive'}</Badge>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -90,10 +90,10 @@ function SettingsForm({ settings, canEdit }: { settings: CommissionSettings; can
             disabled={!canEdit}
             onChange={(e) => setActive(e.target.checked)}
           />
-          Comissão ativa
+          Commission active
         </label>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">Taxa padrão (% da venda)</label>
+          <label className="text-sm">Default rate (% of sale)</label>
           <Input
             type="number"
             min={0}
@@ -103,13 +103,13 @@ function SettingsForm({ settings, canEdit }: { settings: CommissionSettings; can
             disabled={!canEdit}
             onChange={(e) => setRatePercent(e.target.value)}
           />
-          <p className="text-xs text-muted">Aplicada a todo vendedor sem taxa individual configurada abaixo.</p>
+          <p className="text-xs text-muted">Applied to any seller without an individual rate configured below.</p>
         </div>
       </div>
 
       {canEdit && (
         <Button className="self-start" loading={updateMutation.isPending} onClick={() => updateMutation.mutate()}>
-          Salvar
+          Save
         </Button>
       )}
     </Card>
@@ -152,10 +152,10 @@ function SellerRates() {
       setSelectedUserId('');
       setRatePercent('');
       invalidate();
-      toast.success('Taxa individual salva');
+      toast.success('Individual rate saved');
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao salvar taxa individual');
+      toast.error(error instanceof ApiError ? error.message : 'Error saving individual rate');
     },
   });
 
@@ -163,7 +163,7 @@ function SellerRates() {
     mutationFn: (userId: string) => apiFetch(`/commissions/rates/${userId}`, { method: 'DELETE', accessToken: accessToken! }),
     onSuccess: () => {
       invalidate();
-      toast.success('Taxa individual removida — vendedor volta pra taxa padrão');
+      toast.success('Individual rate removed — seller reverts to the default rate');
     },
   });
 
@@ -174,20 +174,20 @@ function SellerRates() {
     <Card className="flex flex-col gap-4">
       <h2 className="flex items-center gap-1.5 text-sm font-medium">
         <UserCog className="h-4 w-4" />
-        Taxas individuais por vendedor
+        Individual rates per seller
       </h2>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         {!ratesQuery.data ? (
           <SkeletonRows rows={2} cols={2} />
         ) : ratesQuery.data.length === 0 ? (
-          <EmptyState icon={Percent} message="Nenhuma taxa individual — todos usam a taxa padrão." />
+          <EmptyState icon={Percent} message="No individual rates — everyone uses the default rate." />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-2 font-medium">Vendedor</th>
-                <th className="px-4 py-2 font-medium">Taxa</th>
+                <th className="px-4 py-2 font-medium">Seller</th>
+                <th className="px-4 py-2 font-medium">Rate</th>
                 {canEdit && <th className="px-4 py-2 font-medium"></th>}
               </tr>
             </thead>
@@ -204,7 +204,7 @@ function SellerRates() {
                         disabled={removeMutation.isPending}
                         onClick={() => removeMutation.mutate(rate.userId)}
                       >
-                        Remover
+                        Remove
                       </button>
                     </td>
                   )}
@@ -218,13 +218,13 @@ function SellerRates() {
       {canEdit && (
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs">Vendedor</label>
+            <label className="text-xs">Seller</label>
             <select
               className="h-9 rounded-md border border-border bg-card px-2 text-sm"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
             >
-              <option value="">Selecione...</option>
+              <option value="">Select...</option>
               {availableUsers.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
@@ -233,7 +233,7 @@ function SellerRates() {
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs">Taxa (%)</label>
+            <label className="text-xs">Rate (%)</label>
             <Input
               type="number"
               min={0}
@@ -251,7 +251,7 @@ function SellerRates() {
             disabled={!selectedUserId}
             onClick={() => upsertMutation.mutate()}
           >
-            Salvar taxa
+            Save rate
           </Button>
         </div>
       )}
@@ -283,17 +283,17 @@ function CommissionReportSection() {
     <div className="flex flex-col gap-2">
       <Card className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">De</label>
+          <label className="text-sm">From</label>
           <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-40" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">Até</label>
+          <label className="text-sm">To</label>
           <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-40" />
         </div>
         <p className="text-sm text-muted">
           {reportQuery.data
-            ? `Período exibido: ${reportQuery.data.from} a ${reportQuery.data.to} — total ${formatCentsToBRL(reportQuery.data.totalCommissionCents)}`
-            : 'Sem filtro, mostra os últimos 30 dias.'}
+            ? `Period shown: ${reportQuery.data.from} to ${reportQuery.data.to} — total ${formatCentsToBRL(reportQuery.data.totalCommissionCents)}`
+            : 'No filter, showing the last 30 days.'}
         </p>
       </Card>
 
@@ -301,16 +301,16 @@ function CommissionReportSection() {
         {!reportQuery.data ? (
           <SkeletonRows rows={2} cols={4} />
         ) : reportQuery.data.porVendedor.length === 0 ? (
-          <EmptyState icon={Trophy} message="Nenhuma venda no período." />
+          <EmptyState icon={Trophy} message="No sales in this period." />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-2 font-medium">Vendedor</th>
-                <th className="px-4 py-2 font-medium">Vendas</th>
-                <th className="px-4 py-2 font-medium">Receita</th>
-                <th className="px-4 py-2 font-medium">Taxa</th>
-                <th className="px-4 py-2 font-medium">Comissão</th>
+                <th className="px-4 py-2 font-medium">Seller</th>
+                <th className="px-4 py-2 font-medium">Sales</th>
+                <th className="px-4 py-2 font-medium">Revenue</th>
+                <th className="px-4 py-2 font-medium">Rate</th>
+                <th className="px-4 py-2 font-medium">Commission</th>
               </tr>
             </thead>
             <tbody>
@@ -334,7 +334,7 @@ function CommissionReportSection() {
 export default function ComissoesPage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Comissão de vendedores</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Seller commissions</h1>
       <CommissionSettingsSection />
       <SellerRates />
       <CommissionReportSection />

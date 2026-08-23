@@ -23,33 +23,33 @@ type Resource = 'customers' | 'suppliers';
 
 const RESOURCE_CONFIG = {
   customers: {
-    label: 'Clientes',
-    singular: 'cliente',
+    label: 'Customers',
+    singular: 'customer',
     endpoint: '/customers',
     icon: Contact,
-    emptyMessage: 'Nenhum cliente cadastrado ainda.',
+    emptyMessage: 'No customers registered yet.',
   },
   suppliers: {
-    label: 'Fornecedores',
-    singular: 'fornecedor',
+    label: 'Suppliers',
+    singular: 'supplier',
     endpoint: '/suppliers',
     icon: Truck,
-    emptyMessage: 'Nenhum fornecedor cadastrado ainda.',
+    emptyMessage: 'No suppliers registered yet.',
   },
 } as const;
 
 // CPF/CNPJ and e-mail are optional in the registration form, but a blank field
 // arrives as "" (not undefined) via react-hook-form — we only validate the format when it's filled in.
 const partyFormSchema = z.object({
-  name: z.string().min(2, 'Nome muito curto').max(160),
+  name: z.string().min(2, 'Name is too short').max(160),
   document: z
     .string()
     .optional()
-    .refine((v) => !v || /^\d{11}$|^\d{14}$/.test(v), 'CPF (11 dígitos) ou CNPJ (14 dígitos), somente números'),
+    .refine((v) => !v || /^\d{11}$|^\d{14}$/.test(v), 'CPF (11 digits) or CNPJ (14 digits), numbers only'),
   email: z
     .string()
     .optional()
-    .refine((v) => !v || z.string().email().safeParse(v).success, 'E-mail inválido'),
+    .refine((v) => !v || z.string().email().safeParse(v).success, 'Invalid email'),
   phone: z.string().optional(),
 });
 
@@ -96,7 +96,7 @@ function PartySection({ resource }: { resource: Resource }) {
     onSuccess: () => {
       reset();
       queryClient.invalidateQueries({ queryKey: [resource] });
-      toast.success(`${config.singular === 'cliente' ? 'Cliente' : 'Fornecedor'} cadastrado`);
+      toast.success(`${config.singular === 'customer' ? 'Customer' : 'Supplier'} added`);
     },
     onError: (error) => {
       if (error instanceof ApiError) {
@@ -109,26 +109,26 @@ function PartySection({ resource }: { resource: Resource }) {
     mutationFn: (id: string) => apiFetch(`${config.endpoint}/${id}`, { method: 'DELETE', accessToken: accessToken! }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [resource] });
-      toast.success(`${config.singular === 'cliente' ? 'Cliente' : 'Fornecedor'} removido`);
+      toast.success(`${config.singular === 'customer' ? 'Customer' : 'Supplier'} removed`);
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : `Erro ao remover ${config.singular}`);
+      toast.error(error instanceof ApiError ? error.message : `Error removing ${config.singular}`);
     },
   });
 
   const exportDataMutation = useMutation({
     mutationFn: (id: string) => apiDownload(`/data-privacy/customers/${id}/export`, accessToken!),
-    onSuccess: () => toast.success('Dados do cliente exportados'),
-    onError: (error) => toast.error(error instanceof ApiError ? error.message : 'Erro ao exportar dados'),
+    onSuccess: () => toast.success('Customer data exported'),
+    onError: (error) => toast.error(error instanceof ApiError ? error.message : 'Error exporting data'),
   });
 
   const anonymizeMutation = useMutation({
     mutationFn: (id: string) => apiFetch(`/data-privacy/customers/${id}/anonymize`, { method: 'POST', accessToken: accessToken! }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [resource] });
-      toast.success('Dados pessoais do cliente anonimizados');
+      toast.success('Customer personal data anonymized');
     },
-    onError: (error) => toast.error(error instanceof ApiError ? error.message : 'Erro ao anonimizar dados'),
+    onError: (error) => toast.error(error instanceof ApiError ? error.message : 'Error anonymizing data'),
   });
 
   if (!accessToken) {
@@ -138,31 +138,31 @@ function PartySection({ resource }: { resource: Resource }) {
   return (
     <div className="flex flex-col gap-6">
       <Card as="form" className="flex flex-col gap-4" onSubmit={handleSubmit((values) => createMutation.mutate(values))}>
-        <h2 className="text-sm font-medium">Novo {config.singular}</h2>
+        <h2 className="text-sm font-medium">New {config.singular}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">Nome</label>
+            <label className="text-sm">Name</label>
             <Input {...register('name')} />
             {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">CPF/CNPJ</label>
-            <Input placeholder="Somente números" {...register('document')} />
+            <Input placeholder="Numbers only" {...register('document')} />
             {errors.document && <p className="text-sm text-red-600">{errors.document.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Telefone</label>
+            <label className="text-sm">Phone</label>
             <Input {...register('phone')} />
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <label className="text-sm">E-mail</label>
+            <label className="text-sm">Email</label>
             <Input type="email" {...register('email')} />
             {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
           </div>
         </div>
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
         <Button type="submit" loading={createMutation.isPending} className="self-start">
-          Adicionar {config.singular}
+          Add {config.singular}
         </Button>
       </Card>
 
@@ -179,9 +179,9 @@ function PartySection({ resource }: { resource: Resource }) {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Nome</th>
+                  <th className="px-4 py-2 font-medium">Name</th>
                   <th className="px-4 py-2 font-medium">CPF/CNPJ</th>
-                  <th className="px-4 py-2 font-medium">Contato</th>
+                  <th className="px-4 py-2 font-medium">Contact</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
               </thead>
@@ -209,7 +209,7 @@ function PartySection({ resource }: { resource: Resource }) {
                                 disabled={exportDataMutation.isPending}
                                 onClick={() => exportDataMutation.mutate(party.id)}
                               >
-                                Exportar dados
+                                Export data
                               </button>
                               <button
                                 type="button"
@@ -217,7 +217,7 @@ function PartySection({ resource }: { resource: Resource }) {
                                 disabled={anonymizeMutation.isPending}
                                 onClick={() => anonymizeMutation.mutate(party.id)}
                               >
-                                Anonimizar
+                                Anonymize
                               </button>
                             </>
                           )}
@@ -227,7 +227,7 @@ function PartySection({ resource }: { resource: Resource }) {
                             disabled={removeMutation.isPending}
                             onClick={() => removeMutation.mutate(party.id)}
                           >
-                            Excluir
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -248,7 +248,7 @@ export default function CadastrosPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Cadastros</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Customers & Suppliers</h1>
 
       <div className="flex gap-1 border-b border-border">
         {(Object.keys(RESOURCE_CONFIG) as Resource[]).map((key) => {

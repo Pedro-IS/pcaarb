@@ -8,15 +8,15 @@ import { formatCentsToBRL } from '@/lib/currency';
 const PLAN_ORDER: SubscribablePlan[] = ['starter', 'profissional', 'multi_loja'];
 
 const PLAN_FEATURES: Record<SubscribablePlan, string[]> = {
-  starter: ['Loja única, 1 caixa', 'Cadastros, PDV, estoque básico', 'Financeiro básico', '1 admin + 1 operador'],
+  starter: ['Single store, 1 register', 'Customers & Suppliers, POS, basic inventory', 'Basic finance', '1 admin + 1 operator'],
   profissional: [
-    'Tudo do Starter',
-    'Compras, inventário, centro de custo/DRE',
-    'Relatórios e BI',
-    'Fidelidade e comissão de vendedores',
-    'Usuários ilimitados, permissões granulares',
+    'Everything in Starter',
+    'Purchases, inventory, cost centers/P&L',
+    'Reports and BI',
+    'Loyalty and salesperson commissions',
+    'Unlimited users, granular permissions',
   ],
-  multi_loja: ['Tudo do Profissional', 'Visão consolidada multi-loja', '+ R$99/mês por loja adicional'],
+  multi_loja: ['Everything in Professional', 'Consolidated multi-store view', '+ R$99/month per additional store'],
 };
 
 export default function PrecosPage() {
@@ -25,10 +25,10 @@ export default function PrecosPage() {
       <div className="flex flex-col items-center gap-3 text-center">
         <span className="text-sm font-medium uppercase tracking-widest text-zinc-500">PCAARB</span>
         <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
-          Preço transparente, sem contrato de implantação
+          Transparent pricing, no setup contract
         </h1>
         <p className="max-w-md text-zinc-600 dark:text-zinc-400">
-          14 dias grátis em qualquer plano. Cancele quando quiser, sem multa.
+          14 days free on any plan. Cancel anytime, no penalty.
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export default function PrecosPage() {
                 <h2 className="font-medium">{catalog.label}</h2>
                 <p className="mt-1 text-3xl font-semibold">
                   {formatCentsToBRL(catalog.priceCents)}
-                  <span className="text-sm font-normal text-muted">/mês</span>
+                  <span className="text-sm font-normal text-muted">/month</span>
                 </p>
               </div>
               <ul className="flex flex-1 flex-col gap-2 text-sm text-muted">
@@ -58,7 +58,7 @@ export default function PrecosPage() {
               </ul>
               <Link href="/registrar">
                 <Button variant={highlighted ? 'primary' : 'secondary'} className="w-full">
-                  Começar grátis
+                  Start for free
                 </Button>
               </Link>
             </Card>
@@ -69,10 +69,10 @@ export default function PrecosPage() {
       <Card className="flex max-w-xl flex-col items-center gap-2 text-center">
         <h2 className="font-medium">Enterprise</h2>
         <p className="text-sm text-muted">
-          Operações grandes, API pública, SSO e suporte dedicado — sob consulta.
+          Large-scale operations, public API, SSO, and dedicated support — contact us for pricing.
         </p>
         <Link href="/registrar">
-          <Button variant="ghost">Falar com a gente</Button>
+          <Button variant="ghost">Talk to us</Button>
         </Link>
       </Card>
     </main>

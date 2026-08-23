@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PCAARB — Gestão para o seu varejo",
-  description: "SaaS de gestão empresarial com PDV para pequeno e médio varejo.",
+  title: "PCAARB — Management for Your Retail Business",
+  description: "Business management SaaS with POS for small and medium retail.",
 };
 
 // Simple typing instead of `LayoutProps<"/">`: that type only exists after a
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="pt-BR"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

@@ -27,21 +27,21 @@ import { SkeletonRows } from '@/components/ui/skeleton';
 import { SaleReceipt } from '@/components/pdv/sale-receipt';
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  dinheiro: 'Dinheiro',
-  cartao_credito: 'Cartão de crédito',
-  cartao_debito: 'Cartão de débito',
+  dinheiro: 'Cash',
+  cartao_credito: 'Credit card',
+  cartao_debito: 'Debit card',
   pix: 'Pix',
 };
 
 const REFUND_METHOD_LABELS: Record<SaleReturnRefundMethod, string> = {
-  dinheiro: 'Dinheiro (do caixa aberto)',
-  estorno_pagamento: 'Estorno no cartão/Pix',
-  outro: 'Outro (troca, crédito combinado à parte...)',
+  dinheiro: 'Cash (from the open register)',
+  estorno_pagamento: 'Card/Pix refund',
+  outro: 'Other (exchange, credit arranged separately...)',
 };
 
 const RETURN_STATUS_BADGE: Record<SaleReturn['status'], { label: string; variant: BadgeVariant }> = {
-  completed: { label: 'Concluída', variant: 'success' },
-  needs_attention: { label: 'Precisa de atenção', variant: 'warning' },
+  completed: { label: 'Completed', variant: 'success' },
+  needs_attention: { label: 'Needs attention', variant: 'warning' },
 };
 
 function formatDateTime(iso: string): string {
@@ -72,11 +72,11 @@ function SaleDetail({
         accessToken: accessToken!,
       }),
     onSuccess: () => {
-      toast.success('NFC-e reemitida');
+      toast.success('NFC-e reissued');
       queryClient.invalidateQueries({ queryKey: ['sales', sale.id] });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao reemitir NFC-e');
+      toast.error(error instanceof ApiError ? error.message : 'Error reissuing NFC-e');
     },
   });
 
@@ -105,9 +105,9 @@ function SaleDetail({
     },
     onSuccess: (created) => {
       if (created.status === 'needs_attention') {
-        toast.warning(created.issue ?? 'Devolução registrada, mas precisa de atenção');
+        toast.warning(created.issue ?? 'Return registered, but needs attention');
       } else {
-        toast.success('Devolução registrada');
+        toast.success('Return registered');
       }
       setReturnFormOpen(false);
       setReturnQuantities({});
@@ -116,7 +116,7 @@ function SaleDetail({
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao registrar devolução');
+      toast.error(error instanceof ApiError ? error.message : 'Error registering return');
     },
   });
 
@@ -127,17 +127,17 @@ function SaleDetail({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1 text-sm">
           <span className="text-muted">
-            {sale.items.length} ite{sale.items.length === 1 ? 'm' : 'ns'} · Venda{' '}
+            {sale.items.length} ite{sale.items.length === 1 ? 'm' : 'ns'} · Sale{' '}
             {sale.id.slice(0, 8)}
           </span>
           {sale.fiscalDocument?.status === 'authorized' && (
             <span className="text-xs text-zinc-600 dark:text-zinc-400">
-              NFC-e autorizada — chave {sale.fiscalDocument.accessKey}
+              NFC-e authorized — key {sale.fiscalDocument.accessKey}
             </span>
           )}
           {sale.fiscalDocument?.status === 'rejected' && (
             <span className="text-xs text-amber-700 dark:text-amber-500">
-              NFC-e não emitida: {sale.fiscalDocument.rejectionReason}
+              NFC-e not issued: {sale.fiscalDocument.rejectionReason}
             </span>
           )}
         </div>
@@ -149,18 +149,18 @@ function SaleDetail({
               onClick={() => retryMutation.mutate()}
             >
               <RefreshCw className="h-4 w-4" />
-              Reemitir NFC-e
+              Reissue NFC-e
             </Button>
           )}
           {sale.status === 'completed' && (
             <Button variant="secondary" onClick={() => setReturnFormOpen((open) => !open)}>
               <Undo2 className="h-4 w-4" />
-              Devolver
+              Return
             </Button>
           )}
           <Button variant="secondary" onClick={() => window.print()}>
             <Printer className="h-4 w-4" />
-            Imprimir cupom
+            Print receipt
           </Button>
         </div>
       </div>
@@ -169,11 +169,11 @@ function SaleDetail({
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
             <tr>
-              <th className="px-3 py-1.5 font-medium">Produto</th>
-              <th className="px-3 py-1.5 font-medium">Qtd</th>
-              <th className="px-3 py-1.5 font-medium">Unitário</th>
+              <th className="px-3 py-1.5 font-medium">Product</th>
+              <th className="px-3 py-1.5 font-medium">Qty</th>
+              <th className="px-3 py-1.5 font-medium">Unit price</th>
               <th className="px-3 py-1.5 font-medium">Total</th>
-              {returnFormOpen && <th className="px-3 py-1.5 font-medium">Devolver</th>}
+              {returnFormOpen && <th className="px-3 py-1.5 font-medium">Return</th>}
             </tr>
           </thead>
           <tbody>
@@ -198,7 +198,7 @@ function SaleDetail({
                           onChange={(e) => setReturnQuantities((prev) => ({ ...prev, [item.id]: e.target.value }))}
                         />
                       ) : (
-                        <span className="text-xs text-muted">já devolvido</span>
+                        <span className="text-xs text-muted">already returned</span>
                       )}
                     </td>
                   )}
@@ -213,15 +213,15 @@ function SaleDetail({
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-sm">Motivo</label>
+              <label className="text-sm">Reason</label>
               <Input
-                placeholder="Ex.: produto com defeito, cliente desistiu..."
+                placeholder="E.g.: defective product, customer changed their mind..."
                 value={returnReason}
                 onChange={(e) => setReturnReason(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-1.5 sm:w-64">
-              <label className="text-sm">Reembolso</label>
+              <label className="text-sm">Refund</label>
               <select
                 className="h-10 rounded-md border border-border bg-card px-3 text-sm"
                 value={returnMethod}
@@ -239,7 +239,7 @@ function SaleDetail({
               disabled={!hasQuantityToReturn || returnReason.trim().length < 3}
               onClick={() => returnMutation.mutate()}
             >
-              Confirmar devolução
+              Confirm return
             </Button>
           </div>
         </div>
@@ -247,7 +247,7 @@ function SaleDetail({
 
       {(returnsQuery.data?.length ?? 0) > 0 && (
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-muted">Devoluções desta venda</span>
+          <span className="text-xs font-medium text-muted">Returns for this sale</span>
           <div className="flex flex-col gap-1.5">
             {returnsQuery.data!.map((ret) => (
               <div
@@ -319,20 +319,20 @@ export default function VendasPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Vendas</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Sales</h1>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         {!salesQuery.data ? (
           <SkeletonRows rows={5} cols={5} />
         ) : salesQuery.data.length === 0 ? (
-          <EmptyState icon={Receipt} message="Nenhuma venda registrada ainda." />
+          <EmptyState icon={Receipt} message="No sales recorded yet." />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-2 font-medium">Data</th>
-                <th className="px-4 py-2 font-medium">Loja</th>
-                <th className="px-4 py-2 font-medium">Cliente</th>
+                <th className="px-4 py-2 font-medium">Date</th>
+                <th className="px-4 py-2 font-medium">Store</th>
+                <th className="px-4 py-2 font-medium">Customer</th>
                 <th className="px-4 py-2 font-medium">Total</th>
                 <th className="px-4 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 font-medium"></th>
@@ -353,9 +353,9 @@ export default function VendasPage() {
                       <td className="px-4 py-2 font-medium">{formatCentsToBRL(sale.totalCents)}</td>
                       <td className="px-4 py-2">
                         {sale.status === 'completed' ? (
-                          <Badge variant="success">Concluída</Badge>
+                          <Badge variant="success">Completed</Badge>
                         ) : (
-                          <Badge variant="danger">Cancelada</Badge>
+                          <Badge variant="danger">Canceled</Badge>
                         )}
                       </td>
                       <td className="px-4 py-2 text-right">

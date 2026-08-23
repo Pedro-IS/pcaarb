@@ -11,14 +11,14 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
 
 const ACTION_LABELS: Record<string, string> = {
-  'user.role_updated': 'Papel de usuário alterado',
-  'permission_override.granted': 'Exceção de permissão concedida',
-  'permission_override.revoked': 'Exceção de permissão revogada',
-  'billing.subscribed': 'Assinatura contratada',
-  'billing.canceled': 'Assinatura cancelada',
-  'sale_return.created': 'Devolução de venda registrada',
-  'auth.password_reset': 'Senha redefinida',
-  'auth.account_locked': 'Conta bloqueada por tentativas de login',
+  'user.role_updated': 'User role changed',
+  'permission_override.granted': 'Permission exception granted',
+  'permission_override.revoked': 'Permission exception revoked',
+  'billing.subscribed': 'Subscription started',
+  'billing.canceled': 'Subscription canceled',
+  'sale_return.created': 'Sale return recorded',
+  'auth.password_reset': 'Password reset',
+  'auth.account_locked': 'Account locked after login attempts',
 };
 
 function formatDateTime(iso: string): string {
@@ -50,7 +50,7 @@ export default function AuditoriaPage() {
   if (!accessToken || !meQuery.data) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Auditoria</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Audit Log</h1>
         <Card>
           <SkeletonRows rows={5} cols={4} />
         </Card>
@@ -61,37 +61,37 @@ export default function AuditoriaPage() {
   if (!canView) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Auditoria</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Audit Log</h1>
         <Card>
-          <EmptyState icon={Lock} message="Só o dono da loja vê o log de auditoria." />
+          <EmptyState icon={Lock} message="Only the store owner can see the audit log." />
         </Card>
       </>
     );
   }
 
   const actorName = (actorUserId: string | null) => {
-    if (!actorUserId) return 'Sistema';
+    if (!actorUserId) return 'System';
     return usersQuery.data?.find((u) => u.id === actorUserId)?.name ?? '—';
   };
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Auditoria</h1>
-      <p className="text-sm text-muted">Ações sensíveis do tenant — troca de papel, permissões, assinatura, devoluções, senha e bloqueio de conta.</p>
+      <h1 className="text-2xl font-semibold tracking-tight">Audit Log</h1>
+      <p className="text-sm text-muted">Sensitive tenant actions — role changes, permissions, subscription, returns, password, and account lockout.</p>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         {!logsQuery.data ? (
           <SkeletonRows rows={8} cols={4} />
         ) : logsQuery.data.length === 0 ? (
-          <EmptyState icon={ScrollText} message="Nenhuma ação registrada ainda." />
+          <EmptyState icon={ScrollText} message="No actions recorded yet." />
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-2 font-medium">Data</th>
-                <th className="px-4 py-2 font-medium">Ação</th>
-                <th className="px-4 py-2 font-medium">Autor</th>
-                <th className="px-4 py-2 font-medium">Detalhes</th>
+                <th className="px-4 py-2 font-medium">Date</th>
+                <th className="px-4 py-2 font-medium">Action</th>
+                <th className="px-4 py-2 font-medium">Actor</th>
+                <th className="px-4 py-2 font-medium">Details</th>
               </tr>
             </thead>
             <tbody>

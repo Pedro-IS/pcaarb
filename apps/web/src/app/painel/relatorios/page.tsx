@@ -51,7 +51,7 @@ export default function RelatoriosPage() {
     try {
       await apiDownload(`/reports/exportar/${kind}.csv${period}`, accessToken);
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : 'Erro ao gerar o arquivo');
+      toast.error(error instanceof ApiError ? error.message : 'Error generating the file');
     } finally {
       setExporting(null);
     }
@@ -112,19 +112,19 @@ export default function RelatoriosPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Relatórios</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
 
       <Card className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">De</label>
+          <label className="text-sm">From</label>
           <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-40" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm">Até</label>
+          <label className="text-sm">To</label>
           <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-40" />
         </div>
         <p className="text-sm text-muted">
-          {summary ? `Período exibido: ${summary.from} a ${summary.to}` : 'Sem filtro, mostra os últimos 30 dias.'}
+          {summary ? `Period shown: ${summary.from} to ${summary.to}` : 'No filter, showing the last 30 days.'}
         </p>
         <div className="ml-auto flex gap-2">
           <Button
@@ -133,7 +133,7 @@ export default function RelatoriosPage() {
             onClick={() => handleExport('vendas')}
           >
             <Download className="h-4 w-4" />
-            Exportar vendas
+            Export sales
           </Button>
           <Button
             variant="secondary"
@@ -141,33 +141,33 @@ export default function RelatoriosPage() {
             onClick={() => handleExport('financeiro')}
           >
             <Download className="h-4 w-4" />
-            Exportar financeiro
+            Export finance
           </Button>
         </div>
       </Card>
       <p className="-mt-2 text-xs text-muted">
-        Exporta em CSV (compatível com Excel/Google Sheets) para enviar ao contador ou abrir em qualquer planilha.
+        Exports as CSV (compatible with Excel/Google Sheets) to send to an accountant or open in any spreadsheet.
       </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <Receipt className="h-3.5 w-3.5" />
-            Vendas no período
+            Sales in period
           </div>
           <p className="text-lg font-semibold">{summary ? summary.totalSales : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <Wallet className="h-3.5 w-3.5" />
-            Faturamento
+            Revenue
           </div>
           <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.totalRevenueCents) : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <BarChart3 className="h-3.5 w-3.5" />
-            Ticket médio
+            Average ticket
           </div>
           <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.averageTicketCents) : '—'}</p>
         </Card>
@@ -176,20 +176,20 @@ export default function RelatoriosPage() {
       <div className="flex flex-col gap-2">
         <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
           <Trophy className="h-3.5 w-3.5" />
-          Ranking de vendedores
+          Seller ranking
         </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!sellersQuery.data ? (
             <SkeletonRows rows={2} cols={3} />
           ) : sellersQuery.data.length === 0 ? (
-            <EmptyState icon={Trophy} message="Nenhuma venda no período." />
+            <EmptyState icon={Trophy} message="No sales in this period." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Vendedor</th>
-                  <th className="px-4 py-2 font-medium">Vendas</th>
-                  <th className="px-4 py-2 font-medium">Receita</th>
+                  <th className="px-4 py-2 font-medium">Seller</th>
+                  <th className="px-4 py-2 font-medium">Sales</th>
+                  <th className="px-4 py-2 font-medium">Revenue</th>
                 </tr>
               </thead>
               <tbody>
@@ -209,20 +209,20 @@ export default function RelatoriosPage() {
       <div className="flex flex-col gap-2">
         <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
           <Store className="h-3.5 w-3.5" />
-          Visão consolidada por loja
+          Consolidated view by store
         </h2>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!storesQuery.data ? (
             <SkeletonRows rows={2} cols={3} />
           ) : storesQuery.data.length === 0 ? (
-            <EmptyState icon={Store} message="Nenhuma venda no período." />
+            <EmptyState icon={Store} message="No sales in this period." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Loja</th>
-                  <th className="px-4 py-2 font-medium">Vendas</th>
-                  <th className="px-4 py-2 font-medium">Receita</th>
+                  <th className="px-4 py-2 font-medium">Store</th>
+                  <th className="px-4 py-2 font-medium">Sales</th>
+                  <th className="px-4 py-2 font-medium">Revenue</th>
                 </tr>
               </thead>
               <tbody>
@@ -240,25 +240,25 @@ export default function RelatoriosPage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-muted">Curva ABC de produtos</h2>
+        <h2 className="text-sm font-medium text-muted">Product ABC curve</h2>
         <p className="text-xs text-muted">
-          Classe A cobre até 80% da receita acumulada, B até 95%, C o restante — ajuda a enxergar os produtos que
-          mais sustentam o faturamento.
+          Class A covers up to 80% of cumulative revenue, B up to 95%, C the rest — helps identify the products that
+          drive most of the revenue.
         </p>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!abcQuery.data ? (
             <SkeletonRows rows={4} cols={5} />
           ) : abcQuery.data.length === 0 ? (
-            <EmptyState icon={BarChart3} message="Nenhuma venda no período." />
+            <EmptyState icon={BarChart3} message="No sales in this period." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Produto</th>
-                  <th className="px-4 py-2 font-medium">Qtd. vendida</th>
-                  <th className="px-4 py-2 font-medium">Receita</th>
-                  <th className="px-4 py-2 font-medium">% da receita</th>
-                  <th className="px-4 py-2 font-medium">Classe</th>
+                  <th className="px-4 py-2 font-medium">Product</th>
+                  <th className="px-4 py-2 font-medium">Qty. sold</th>
+                  <th className="px-4 py-2 font-medium">Revenue</th>
+                  <th className="px-4 py-2 font-medium">% of revenue</th>
+                  <th className="px-4 py-2 font-medium">Class</th>
                 </tr>
               </thead>
               <tbody>
@@ -282,27 +282,27 @@ export default function RelatoriosPage() {
       <div className="flex flex-col gap-2">
         <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
           <PackageSearch className="h-3.5 w-3.5" />
-          Sugestão de reposição de estoque
+          Restocking suggestions
         </h2>
         <p className="text-xs text-muted">
-          Estimativa por média móvel simples (venda no período ÷ dias do período) — não é um modelo de previsão com
-          sazonalidade, é uma projeção linear sobre o que já foi vendido. Produtos sem histórico de venda e com
-          estoque saudável não aparecem aqui.
+          Estimated with a simple moving average (sales in period ÷ days in period) — not a forecasting model with
+          seasonality, it is a linear projection over what has already been sold. Products with no sales history and
+          healthy stock do not show up here.
         </p>
         <div className="overflow-x-auto rounded-lg border border-border">
           {!reorderQuery.data ? (
             <SkeletonRows rows={3} cols={5} />
           ) : reorderQuery.data.length === 0 ? (
-            <EmptyState icon={PackageSearch} message="Nenhum produto precisa de atenção no momento." />
+            <EmptyState icon={PackageSearch} message="No product needs attention right now." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Produto</th>
-                  <th className="px-4 py-2 font-medium">Estoque</th>
-                  <th className="px-4 py-2 font-medium">Vendas/dia (média)</th>
-                  <th className="px-4 py-2 font-medium">Previsão de esgotar</th>
-                  <th className="px-4 py-2 font-medium">Sugestão de compra</th>
+                  <th className="px-4 py-2 font-medium">Product</th>
+                  <th className="px-4 py-2 font-medium">Stock</th>
+                  <th className="px-4 py-2 font-medium">Sales/day (avg.)</th>
+                  <th className="px-4 py-2 font-medium">Stockout forecast</th>
+                  <th className="px-4 py-2 font-medium">Suggested order</th>
                   <th className="px-4 py-2 font-medium">Status</th>
                 </tr>
               </thead>
@@ -313,14 +313,14 @@ export default function RelatoriosPage() {
                     <td className="px-4 py-2">{item.stockQuantity}</td>
                     <td className="px-4 py-2 text-muted">{item.avgDailySales.toFixed(2)}</td>
                     <td className="px-4 py-2 text-muted">
-                      {item.daysUntilStockout === null ? '—' : `${item.daysUntilStockout} dia(s)`}
+                      {item.daysUntilStockout === null ? '—' : `${item.daysUntilStockout} day(s)`}
                     </td>
                     <td className="px-4 py-2">{item.suggestedReorderQty > 0 ? item.suggestedReorderQty : '—'}</td>
                     <td className="px-4 py-2">
                       {item.needsAttention ? (
                         <Badge variant="danger">
                           <AlertTriangle className="mr-1 inline h-3 w-3" />
-                          Atenção
+                          Attention
                         </Badge>
                       ) : (
                         <Badge variant="success">OK</Badge>
@@ -337,14 +337,14 @@ export default function RelatoriosPage() {
       <div className="flex flex-col gap-2">
         <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
           <Tag className="h-3.5 w-3.5" />
-          Sugestão de precificação
+          Pricing suggestions
         </h2>
         <p className="text-xs text-muted">
-          Preço sugerido pela margem-alvo informada (custo ÷ (1 − margem)) — heurística de margem, não considera
-          concorrência ou elasticidade de preço. Só entram produtos com custo cadastrado.
+          Price suggested from the target margin entered (cost ÷ (1 − margin)) — a margin heuristic, does not account
+          for competition or price elasticity. Only products with a registered cost are included.
         </p>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted">Margem-alvo</label>
+          <label className="text-sm text-muted">Target margin</label>
           <Input
             type="number"
             min={0}
@@ -359,16 +359,16 @@ export default function RelatoriosPage() {
           {!pricingQuery.data ? (
             <SkeletonRows rows={3} cols={5} />
           ) : pricingQuery.data.length === 0 ? (
-            <EmptyState icon={Tag} message="Nenhum produto ativo com custo cadastrado." />
+            <EmptyState icon={Tag} message="No active product with a registered cost." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Produto</th>
-                  <th className="px-4 py-2 font-medium">Preço atual</th>
-                  <th className="px-4 py-2 font-medium">Custo</th>
-                  <th className="px-4 py-2 font-medium">Margem atual</th>
-                  <th className="px-4 py-2 font-medium">Preço sugerido</th>
+                  <th className="px-4 py-2 font-medium">Product</th>
+                  <th className="px-4 py-2 font-medium">Current price</th>
+                  <th className="px-4 py-2 font-medium">Cost</th>
+                  <th className="px-4 py-2 font-medium">Current margin</th>
+                  <th className="px-4 py-2 font-medium">Suggested price</th>
                 </tr>
               </thead>
               <tbody>
@@ -379,7 +379,7 @@ export default function RelatoriosPage() {
                     <td className="px-4 py-2 text-muted">{formatCentsToBRL(item.costPriceCents)}</td>
                     <td className="px-4 py-2">
                       {item.belowCost ? (
-                        <Badge variant="danger">{item.currentMarginPercent.toFixed(1)}% (abaixo do custo)</Badge>
+                        <Badge variant="danger">{item.currentMarginPercent.toFixed(1)}% (below cost)</Badge>
                       ) : (
                         <span className={item.currentMarginPercent < 15 ? 'text-amber-600' : ''}>
                           {item.currentMarginPercent.toFixed(1)}%
@@ -398,23 +398,23 @@ export default function RelatoriosPage() {
       <div className="flex flex-col gap-2">
         <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
           <Landmark className="h-3.5 w-3.5" />
-          DRE simplificado
+          Simplified P&amp;L
         </h2>
         <p className="text-xs text-muted">
-          Regime de caixa: só considera contas já pagas no período, não o que está apenas lançado.
+          Cash basis: only counts entries already paid in the period, not what is merely posted.
         </p>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card className="flex flex-col gap-1">
-            <p className="text-xs text-muted">Receitas realizadas</p>
+            <p className="text-xs text-muted">Revenue realized</p>
             <p className="text-lg font-semibold text-green-600">{dre ? formatCentsToBRL(dre.receitasCents) : '—'}</p>
           </Card>
           <Card className="flex flex-col gap-1">
-            <p className="text-xs text-muted">Despesas realizadas</p>
+            <p className="text-xs text-muted">Expenses realized</p>
             <p className="text-lg font-semibold text-red-600">{dre ? formatCentsToBRL(dre.despesasCents) : '—'}</p>
           </Card>
           <Card className="flex flex-col gap-1">
-            <p className="text-xs text-muted">Resultado</p>
+            <p className="text-xs text-muted">Result</p>
             <p className={`text-lg font-semibold ${dre && dre.resultadoCents < 0 ? 'text-red-600' : 'text-green-600'}`}>
               {dre ? formatCentsToBRL(dre.resultadoCents) : '—'}
             </p>
@@ -425,15 +425,15 @@ export default function RelatoriosPage() {
           {!dre ? (
             <SkeletonRows rows={3} cols={4} />
           ) : dre.porCentroDeCusto.length === 0 ? (
-            <EmptyState icon={Landmark} message="Nenhuma conta paga no período." />
+            <EmptyState icon={Landmark} message="No entries paid in this period." />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Centro de custo</th>
-                  <th className="px-4 py-2 font-medium">Receitas</th>
-                  <th className="px-4 py-2 font-medium">Despesas</th>
-                  <th className="px-4 py-2 font-medium">Resultado</th>
+                  <th className="px-4 py-2 font-medium">Cost center</th>
+                  <th className="px-4 py-2 font-medium">Revenue</th>
+                  <th className="px-4 py-2 font-medium">Expenses</th>
+                  <th className="px-4 py-2 font-medium">Result</th>
                 </tr>
               </thead>
               <tbody>

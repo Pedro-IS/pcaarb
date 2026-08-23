@@ -23,19 +23,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/lib/use-current-user';
 
 const SHORTCUTS = [
-  { href: '/painel/pdv', label: 'PDV', description: 'Abrir caixa e vender', icon: ShoppingCart },
-  { href: '/painel/produtos', label: 'Produtos', description: 'Cadastro, categorias e estoque', icon: Package },
-  { href: '/painel/vendas', label: 'Vendas', description: 'Histórico, reimpressão de cupom e reemissão de NFC-e', icon: Receipt },
-  { href: '/painel/contagens', label: 'Inventário', description: 'Contagem de estoque e ajustes', icon: ClipboardList },
-  { href: '/painel/cadastros', label: 'Cadastros', description: 'Clientes e fornecedores', icon: Contact },
-  { href: '/painel/fidelidade', label: 'Fidelidade', description: 'Pontos, resgate e histórico do cliente', icon: Gift },
-  { href: '/painel/compras', label: 'Compras', description: 'Pedido a fornecedor e recebimento', icon: ShoppingBag },
-  { href: '/painel/financeiro', label: 'Financeiro', description: 'Contas a pagar e receber', icon: Wallet },
-  { href: '/painel/relatorios', label: 'Relatórios', description: 'Curva ABC, ticket médio e ranking', icon: BarChart3 },
-  { href: '/painel/comissoes', label: 'Comissões', description: 'Taxa de comissão e relatório por vendedor', icon: Percent },
-  { href: '/painel/lojas', label: 'Lojas', description: 'Unidades da rede e visão consolidada', icon: Store },
-  { href: '/painel/usuarios', label: 'Usuários', description: 'Convidar e gerenciar papéis', icon: Users },
-  { href: '/painel/assinatura', label: 'Assinatura', description: 'Plano, fatura e forma de pagamento', icon: CreditCard },
+  { href: '/painel/pdv', label: 'POS', description: 'Open register and sell', icon: ShoppingCart },
+  { href: '/painel/produtos', label: 'Products', description: 'Catalog, categories, and stock', icon: Package },
+  { href: '/painel/vendas', label: 'Sales', description: 'History, receipt reprints, and NFC-e reissue', icon: Receipt },
+  { href: '/painel/contagens', label: 'Inventory', description: 'Stock counts and adjustments', icon: ClipboardList },
+  { href: '/painel/cadastros', label: 'Customers & Suppliers', description: 'Customers and suppliers', icon: Contact },
+  { href: '/painel/fidelidade', label: 'Loyalty', description: 'Points, redemption, and customer history', icon: Gift },
+  { href: '/painel/compras', label: 'Purchases', description: 'Supplier orders and receiving', icon: ShoppingBag },
+  { href: '/painel/financeiro', label: 'Finance', description: 'Accounts payable and receivable', icon: Wallet },
+  { href: '/painel/relatorios', label: 'Reports', description: 'ABC analysis, average ticket, and rankings', icon: BarChart3 },
+  { href: '/painel/comissoes', label: 'Commissions', description: 'Commission rates and per-salesperson reports', icon: Percent },
+  { href: '/painel/lojas', label: 'Stores', description: 'Network locations and consolidated view', icon: Store },
+  { href: '/painel/usuarios', label: 'Users', description: 'Invite and manage roles', icon: Users },
+  { href: '/painel/assinatura', label: 'Subscription', description: 'Plan, invoice, and payment method', icon: CreditCard },
 ];
 
 function daysUntil(dateIso: string): number {
@@ -50,22 +50,22 @@ export default function PainelPage() {
     <>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {me ? `Olá, ${me.user.name.split(' ')[0]}` : 'Painel'}
+          {me ? `Hi, ${me.user.name.split(' ')[0]}` : 'Dashboard'}
         </h1>
         {me ? (
           <div className="mt-2 flex items-center gap-2">
             <span className="text-sm text-muted">{me.tenant.companyName}</span>
             {me.tenant.status === 'trial' && me.tenant.trialEndsAt && (
               <Badge variant={daysUntil(me.tenant.trialEndsAt) <= 3 ? 'warning' : 'accent'}>
-                Trial — {Math.max(daysUntil(me.tenant.trialEndsAt), 0)} dia(s) restante(s)
+                Trial — {Math.max(daysUntil(me.tenant.trialEndsAt), 0)} day(s) left
               </Badge>
             )}
-            {me.tenant.status === 'active' && <Badge variant="success">Assinatura ativa</Badge>}
+            {me.tenant.status === 'active' && <Badge variant="success">Active subscription</Badge>}
             {me.tenant.status === 'past_due' && (
-              <Badge variant="warning">Pagamento pendente — regularize em Assinatura</Badge>
+              <Badge variant="warning">Payment pending — resolve it under Subscription</Badge>
             )}
             {(me.tenant.status === 'blocked' || me.tenant.status === 'canceled') && (
-              <Badge variant="danger">Acesso bloqueado — regularize em Assinatura</Badge>
+              <Badge variant="danger">Access blocked — resolve it under Subscription</Badge>
             )}
           </div>
         ) : (
@@ -97,8 +97,8 @@ export default function PainelPage() {
       </div>
 
       <p className="text-sm text-muted">
-        Cada venda no PDV já emite NFC-e e confirma pagamento via gateway em modo sandbox — troca para um
-        provedor real (Focus NFe, Pagar.me...) quando a conta/credenciais existirem (ver docs/03).
+        Every sale in the POS already issues an NFC-e and confirms payment via a gateway in sandbox mode —
+        switch to a real provider (Focus NFe, Pagar.me...) once the account/credentials are in place (see docs/03).
       </p>
     </>
   );

@@ -44,44 +44,44 @@ export default function RegisterPage() {
     >
       <div>
         <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Criar conta</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Create account</h1>
         <p className="mt-1 text-sm text-muted">
-          Comece a vender hoje mesmo — {process.env.NEXT_PUBLIC_TRIAL_DAYS ?? '14'} dias grátis.
+          Start selling today — {process.env.NEXT_PUBLIC_TRIAL_DAYS ?? '14'} days free.
         </p>
       </div>
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
-        <Field label="Nome da empresa" error={errors.companyName?.message}>
+        <Field label="Company name" error={errors.companyName?.message}>
           <Input {...register('companyName')} />
         </Field>
 
-        <Field label="CPF ou CNPJ (somente números)" error={errors.document?.message}>
+        <Field label="CPF or CNPJ (numbers only)" error={errors.document?.message}>
           <Input {...register('document')} />
         </Field>
 
-        <Field label="Seu nome" error={errors.ownerName?.message}>
+        <Field label="Your name" error={errors.ownerName?.message}>
           <Input {...register('ownerName')} />
         </Field>
 
-        <Field label="Seu e-mail" error={errors.ownerEmail?.message}>
+        <Field label="Your email" error={errors.ownerEmail?.message}>
           <Input type="email" autoComplete="email" {...register('ownerEmail')} />
         </Field>
 
-        <Field label="Senha" error={errors.password?.message}>
+        <Field label="Password" error={errors.password?.message}>
           <Input type="password" autoComplete="new-password" {...register('password')} />
         </Field>
 
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
-          Criar conta grátis
+          Create free account
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted">
-        Já tem conta?{' '}
+        Already have an account?{' '}
         <Link href="/login" className="font-medium text-accent hover:underline">
-          Entrar
+          Sign in
         </Link>
       </p>
     </motion.main>

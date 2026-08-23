@@ -2,9 +2,9 @@ import type { Sale, PaymentMethod } from '@pcaarb/shared';
 import { formatCentsToBRL } from '@/lib/currency';
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  dinheiro: 'Dinheiro',
-  cartao_credito: 'Cartão de crédito',
-  cartao_debito: 'Cartão de débito',
+  dinheiro: 'Cash',
+  cartao_credito: 'Credit card',
+  cartao_debito: 'Debit card',
   pix: 'Pix',
 };
 
@@ -26,7 +26,7 @@ export function SaleReceipt({ sale, companyName, storeName }: SaleReceiptProps) 
       <div className="text-center">
         <p className="font-bold">{companyName}</p>
         {storeName && <p>{storeName}</p>}
-        <p>Comprovante de venda</p>
+        <p>Sale receipt</p>
       </div>
 
       <div className="my-2 border-t border-dashed border-black" />
@@ -35,7 +35,7 @@ export function SaleReceipt({ sale, companyName, storeName }: SaleReceiptProps) 
         <span>{createdAt.toLocaleDateString('pt-BR')}</span>
         <span>{createdAt.toLocaleTimeString('pt-BR')}</span>
       </div>
-      <p>Venda: {sale.id.slice(0, 8)}</p>
+      <p>Sale: {sale.id.slice(0, 8)}</p>
 
       <div className="my-2 border-t border-dashed border-black" />
 
@@ -59,7 +59,7 @@ export function SaleReceipt({ sale, companyName, storeName }: SaleReceiptProps) 
       </div>
       {sale.discountCents > 0 && (
         <div className="flex justify-between">
-          <span>Desconto</span>
+          <span>Discount</span>
           <span>-{formatCentsToBRL(sale.discountCents)}</span>
         </div>
       )}
@@ -85,7 +85,7 @@ export function SaleReceipt({ sale, companyName, storeName }: SaleReceiptProps) 
       )}
 
       <div className="my-2 border-t border-dashed border-black" />
-      <p className="text-center">Obrigado pela preferência!</p>
+      <p className="text-center">Thank you for your business!</p>
     </div>
   );
 }

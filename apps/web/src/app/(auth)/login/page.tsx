@@ -43,14 +43,14 @@ export default function LoginPage() {
     >
       <div>
         <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Entrar</h1>
-        <p className="mt-1 text-sm text-muted">Acesse o painel da sua loja.</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Sign in</h1>
+        <p className="mt-1 text-sm text-muted">Access your store&apos;s dashboard.</p>
       </div>
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className="text-sm font-medium">
-            E-mail
+            Email
           </label>
           <Input id="email" type="email" autoComplete="email" {...register('email')} />
           {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
@@ -59,10 +59,10 @@ export default function LoginPage() {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="password" className="text-sm font-medium">
-              Senha
+              Password
             </label>
             <Link href="/esqueci-senha" className="text-sm text-accent hover:underline">
-              Esqueci minha senha
+              Forgot my password
             </Link>
           </div>
           <Input id="password" type="password" autoComplete="current-password" {...register('password')} />
@@ -72,14 +72,14 @@ export default function LoginPage() {
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
-          Entrar
+          Sign in
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted">
-        Ainda não tem conta?{' '}
+        Don&apos;t have an account yet?{' '}
         <Link href="/registrar" className="font-medium text-accent hover:underline">
-          Cadastre sua loja
+          Register your store
         </Link>
       </p>
     </motion.main>

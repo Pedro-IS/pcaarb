@@ -9,18 +9,18 @@ export const SUBSCRIPTION_PLAN_CATALOG = {
   starter: {
     label: 'Starter',
     priceCents: 11_900,
-    description: 'Loja única, 1 caixa — cadastros, PDV, estoque básico, financeiro básico, 1 admin + 1 operador.',
+    description: 'Single store, 1 register — customers/suppliers, POS, basic stock, basic finance, 1 admin + 1 cashier.',
   },
   profissional: {
-    label: 'Profissional',
+    label: 'Professional',
     priceCents: 24_900,
     description:
-      'Tudo do Starter + compras, inventário, centro de custo/DRE, relatórios/BI, fidelidade, comissão de vendedores, usuários ilimitados.',
+      'Everything in Starter + purchasing, inventory, cost centers/P&L, reports/BI, loyalty, seller commissions, unlimited users.',
   },
   multi_loja: {
-    label: 'Multi-loja',
+    label: 'Multi-store',
     priceCents: 34_900,
-    description: 'Tudo do Profissional + visão consolidada multi-loja (mais R$99/loja adicional).',
+    description: 'Everything in Professional + consolidated multi-store view (plus R$99/additional store).',
   },
 } as const;
 
