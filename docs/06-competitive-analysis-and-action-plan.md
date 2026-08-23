@@ -32,6 +32,10 @@ In priority order, each a full cycle (implement → test → verify live → doc
 
 Each of these gets a dedicated security-review pass if it touches auth/money, per the existing cadence (`pcaarb_security_cadence`).
 
+**RLS audit closed out fully while fixing item 2**, not just the two tables named above: checked every other table in the schema for the same kind of gap. `api_keys` and `user_permission_overrides` also lack RLS, but both carry sound, deliberate, already-documented reasons (`api_keys` must be queried by hash before any tenant context exists — same as `users`/`tenants`; `user_permission_overrides` is read by `AbilityGuard` on every single authenticated request, a genuine hot-path tradeoff against wrapping every API call in an extra transaction) — unlike `subscriptions`, neither is an oversight. Every non-RLS table in the schema now has a specific, checked justification.
+
+With all three items above shipped, there's no queued next item as of 2026-08-23 — the next entry here should come from either a fresh competitive-analysis pass (re-run periodically, not just once, per the original reasoning above) or a specific gap surfaced by real usage once customers exist.
+
 ## Your responsibilities (outside my scope, until we sell)
 
 Unchanged from the standing checklist (`pcaarb_launch_blockers`), restated here because this document is meant to be the one place that answers "what's left" in full:
