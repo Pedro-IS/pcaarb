@@ -1,8 +1,9 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { and, desc, eq, inArray, lte } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, lte, ne } from 'drizzle-orm';
 import { SUBSCRIPTION_PLAN_CATALOG, type SubscribeInput } from '@pcaarb/shared';
 import { DRIZZLE, type Database } from '../../database/drizzle.provider';
+import { runWithTenant } from '../../database/tenant-context';
 import {
   subscriptions,
   subscriptionInvoices,
@@ -24,14 +25,6 @@ function addDays(date: Date, days: number): Date {
   return result;
 }
 
-/**
- * subscriptions/subscription_invoices don't have RLS by tenant_id — same
- * treatment as `tenants`: they're platform data about the tenant (billing),
- * not tenant-isolated business data like sales/products. This is also
- * necessary in practice: the billing cron needs to scan ALL tenants at once
- * to find who's overdue, which per-session RLS would prevent. All access is
- * still explicitly filtered by tenantId in the code.
- */
 @Injectable()
 export class BillingService {
   private readonly logger = new Logger(BillingService.name);
@@ -42,16 +35,16 @@ export class BillingService {
   ) {}
 
   async getSubscription(tenantId: string): Promise<SubscriptionRow | undefined> {
-    const [row] = await this.db.select().from(subscriptions).where(eq(subscriptions.tenantId, tenantId)).limit(1);
-    return row;
+    return runWithTenant(this.db, tenantId, async (tx) => {
+      const [row] = await tx.select().from(subscriptions).where(eq(subscriptions.tenantId, tenantId)).limit(1);
+      return row;
+    });
   }
 
   async listInvoices(tenantId: string): Promise<SubscriptionInvoiceRow[]> {
-    return this.db
-      .select()
-      .from(subscriptionInvoices)
-      .where(eq(subscriptionInvoices.tenantId, tenantId))
-      .orderBy(desc(subscriptionInvoices.createdAt));
+    return runWithTenant(this.db, tenantId, (tx) =>
+      tx.select().from(subscriptionInvoices).where(eq(subscriptionInvoices.tenantId, tenantId)).orderBy(desc(subscriptionInvoices.createdAt)),
+    );
   }
 
   // Serves three cases with a single endpoint: first subscription,
@@ -81,7 +74,7 @@ export class BillingService {
     const now = new Date();
     const periodEnd = addDays(now, BILLING_PERIOD_DAYS);
 
-    return this.db.transaction(async (tx) => {
+    return runWithTenant(this.db, tenantId, async (tx) => {
       const [row] = existing
         ? await tx
             .update(subscriptions)
@@ -113,7 +106,7 @@ export class BillingService {
         status: 'paid',
         providerChargeId: charge.providerTransactionId,
       });
-      await tx.update(tenants).set({ status: 'active' }).where(eq(tenants.id, tenantId));
+      await tx.update(tenants).set({ status: 'active', nextBillingCheckAt: periodEnd }).where(eq(tenants.id, tenantId));
 
       return row;
     });
@@ -129,7 +122,7 @@ export class BillingService {
       throw new BadRequestException('Nenhuma assinatura ativa pra cancelar');
     }
 
-    return this.db.transaction(async (tx) => {
+    return runWithTenant(this.db, tenantId, async (tx) => {
       const [updated] = await tx
         .update(subscriptions)
         .set({ status: 'canceled', updatedAt: new Date() })
@@ -138,7 +131,13 @@ export class BillingService {
       if (!updated) {
         throw new Error('Falha ao cancelar assinatura');
       }
-      await tx.update(tenants).set({ status: 'canceled' }).where(eq(tenants.id, tenantId));
+      // Cleared, not left pointing at a stale date: without this, a
+      // canceled tenant with no subscription row at all could never happen
+      // (there's always one, just status: 'canceled'), but clearing it here
+      // means processDueBilling()'s candidate query never even considers
+      // this tenant again — one less thing relying on the inner status
+      // filter alone.
+      await tx.update(tenants).set({ status: 'canceled', nextBillingCheckAt: null }).where(eq(tenants.id, tenantId));
       return updated;
     });
   }
@@ -157,17 +156,38 @@ export class BillingService {
   // which point it blocks. A tenant that's already blocked is no longer
   // retried on its own — only via subscribe() (manual reactivation), so we
   // don't keep trying to charge a card already known to be invalid.
+  // subscriptions/subscription_invoices are RLS-FORCEd like every other
+  // tenant-owned table (migration 0039), so this can't do one cross-tenant
+  // join on `subscriptions` the way it used to — a query against an
+  // RLS-FORCEd table with no app.tenant_id set comes back empty, not "all
+  // tenants". Candidate discovery instead runs against
+  // tenants.nextBillingCheckAt, a plain (non-RLS) pointer kept in sync with
+  // subscriptions.currentPeriodEnd by subscribe()/cancel()/the renewal
+  // branch below — same role tenants.trialEndsAt already plays for
+  // TrialExpiryService. This was NOT optional: an earlier version of this
+  // method looped every row in `tenants` (one runWithTenant transaction
+  // each) and timed out in the e2e suite once the dev database had
+  // accumulated a few thousand tenants from prior test runs — a real
+  // preview of what looping the whole tenant table would cost in
+  // production at even modest scale, not just a test artifact to shrug off.
   async processDueBilling(): Promise<number> {
     const now = new Date();
-    const due = await this.db
-      .select({ subscription: subscriptions, tenantStatus: tenants.status })
-      .from(subscriptions)
-      .innerJoin(tenants, eq(tenants.id, subscriptions.tenantId))
-      .where(and(inArray(subscriptions.status, ['active', 'past_due']), lte(subscriptions.currentPeriodEnd, now)));
+    const tenantRows = await this.db
+      .select({ id: tenants.id })
+      .from(tenants)
+      .where(and(ne(tenants.status, 'blocked'), isNotNull(tenants.nextBillingCheckAt), lte(tenants.nextBillingCheckAt, now)));
 
     let processed = 0;
-    for (const { subscription, tenantStatus } of due) {
-      if (tenantStatus === 'blocked') {
+    for (const tenant of tenantRows) {
+      const subscription = await runWithTenant(this.db, tenant.id, async (tx) => {
+        const [row] = await tx
+          .select()
+          .from(subscriptions)
+          .where(and(eq(subscriptions.tenantId, tenant.id), inArray(subscriptions.status, ['active', 'past_due']), lte(subscriptions.currentPeriodEnd, now)))
+          .limit(1);
+        return row;
+      });
+      if (!subscription) {
         continue;
       }
       processed += 1;
@@ -181,7 +201,7 @@ export class BillingService {
 
       if (charge.approved) {
         const periodEnd = addDays(subscription.currentPeriodEnd, BILLING_PERIOD_DAYS);
-        await this.db.transaction(async (tx) => {
+        await runWithTenant(this.db, tenant.id, async (tx) => {
           await tx
             .update(subscriptions)
             .set({
@@ -201,14 +221,18 @@ export class BillingService {
             status: 'paid',
             providerChargeId: charge.providerTransactionId,
           });
-          await tx.update(tenants).set({ status: 'active' }).where(eq(tenants.id, subscription.tenantId));
+          await tx.update(tenants).set({ status: 'active', nextBillingCheckAt: periodEnd }).where(eq(tenants.id, subscription.tenantId));
         });
         continue;
       }
 
       const pastDueSince = subscription.pastDueSince ?? now;
       const graceExpired = now.getTime() - pastDueSince.getTime() > GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000;
-      await this.db.transaction(async (tx) => {
+      // tenants.nextBillingCheckAt deliberately untouched here: it still
+      // mirrors the unmoved subscriptions.currentPeriodEnd, which is
+      // already <= now — so this tenant is picked up again automatically
+      // on tomorrow's run without needing an explicit "retry tomorrow" write.
+      await runWithTenant(this.db, tenant.id, async (tx) => {
         await tx
           .update(subscriptions)
           .set({ status: 'past_due', pastDueSince, updatedAt: now })

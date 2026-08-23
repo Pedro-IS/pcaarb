@@ -1,0 +1,2 @@
+ALTER TABLE "tenants" ADD COLUMN "next_billing_check_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "tenants_next_billing_check_at_idx" ON "tenants" USING btree ("next_billing_check_at");

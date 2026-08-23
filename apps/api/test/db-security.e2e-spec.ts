@@ -5,7 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { DRIZZLE, type Database } from '../src/database/drizzle.provider';
-import { products } from '../src/database/schema/index';
+import { products, subscriptions } from '../src/database/schema/index';
 import { registerTenant } from './helpers/register-tenant';
 
 /**
@@ -70,6 +70,27 @@ describe('Segurança do banco — privilégio da role de runtime (e2e)', () => {
     let rows: unknown[] = [];
     try {
       rows = await db.select().from(products);
+    } catch {
+      rows = [];
+    }
+    expect(rows).toHaveLength(0);
+  });
+
+  // Regression test for the 2026-08-23 gap closed in migration 0039:
+  // subscriptions/subscription_invoices were the only tenant-owned business
+  // tables left outside RLS (see docs/06-competitive-analysis-and-action-plan.md).
+  // Same proof as the products test above, applied to the table that holds
+  // billing plan/price/period data.
+  it('a raw query on subscriptions sem contexto de tenant não vaza dados entre tenants', async () => {
+    const tenantA = await registerTenant(app, 'dbsec-billing-a');
+    const tenantB = await registerTenant(app, 'dbsec-billing-b');
+
+    await request(app.getHttpServer()).post('/api/billing/subscribe').set('Authorization', `Bearer ${tenantA.accessToken}`).send({ plan: 'starter' });
+    await request(app.getHttpServer()).post('/api/billing/subscribe').set('Authorization', `Bearer ${tenantB.accessToken}`).send({ plan: 'starter' });
+
+    let rows: unknown[] = [];
+    try {
+      rows = await db.select().from(subscriptions);
     } catch {
       rows = [];
     }

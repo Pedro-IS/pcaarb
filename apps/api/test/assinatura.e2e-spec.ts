@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import type { Env } from '../src/config/env.validation';
 import { DRIZZLE, type Database } from '../src/database/drizzle.provider';
+import { runWithTenant } from '../src/database/tenant-context';
 import { subscriptions, subscriptionInvoices, tenants, users } from '../src/database/schema/index';
 import { PAYMENT_PROVIDER, type PaymentProvider } from '../src/modules/payments/payment-provider.interface';
 import { BillingService } from '../src/modules/billing/billing.service';
@@ -189,22 +190,35 @@ describe('Assinatura / billing (e2e)', () => {
       .send({ plan: 'starter' });
 
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    await db.update(subscriptions).set({ currentPeriodEnd: yesterday }).where(eq(subscriptions.tenantId, tenant.tenantId));
+    await runWithTenant(db, tenant.tenantId, (tx) =>
+      tx.update(subscriptions).set({ currentPeriodEnd: yesterday }).where(eq(subscriptions.tenantId, tenant.tenantId)),
+    );
+    // processDueBilling() finds candidates via tenants.nextBillingCheckAt
+    // (not RLS-protected), kept in sync by the app on subscribe/renew — this
+    // direct DB manipulation bypasses the app layer on purpose (there's no
+    // endpoint to backdate a period), so the test has to mirror that pointer
+    // itself too, the same way subscribe() would have.
+    await db.update(tenants).set({ nextBillingCheckAt: yesterday }).where(eq(tenants.id, tenant.tenantId));
 
     const billingService = app.get(BillingService);
     const processed = await billingService.processDueBilling();
     expect(processed).toBeGreaterThanOrEqual(1);
 
-    const [after] = await db.select().from(subscriptions).where(eq(subscriptions.tenantId, tenant.tenantId));
+    const after = await runWithTenant(db, tenant.tenantId, async (tx) => {
+      const [row] = await tx.select().from(subscriptions).where(eq(subscriptions.tenantId, tenant.tenantId));
+      return row;
+    });
     expect(after?.status).toBe('active');
     // Renewed from the due date (yesterday), not the current date — the new
     // period starts exactly where the previous one should have ended.
     expect(after!.currentPeriodEnd.getTime()).toBeGreaterThan(yesterday.getTime());
     expect(after!.currentPeriodStart.getTime()).toBe(yesterday.getTime());
 
-    const invoices = await db.select().from(subscriptionInvoices).where(eq(subscriptionInvoices.tenantId, tenant.tenantId));
-    expect(invoices).toHaveLength(2);
-    expect(invoices.every((invoice) => invoice.status === 'paid')).toBe(true);
+    const invoices = await request(app.getHttpServer())
+      .get('/api/billing/invoices')
+      .set('Authorization', `Bearer ${tenant.accessToken}`);
+    expect(invoices.body).toHaveLength(2);
+    expect(invoices.body.every((invoice: { status: string }) => invoice.status === 'paid')).toBe(true);
   });
 
   it('valida o corpo do subscribe (plano inválido) e rejeita cancelar sem assinatura', async () => {
@@ -261,24 +275,38 @@ describe('Assinatura — inadimplência e carência (e2e)', () => {
     const [tenantRow] = await db.select().from(tenants).where(eq(tenants.id, tenant.tenantId));
     expect(tenantRow?.status).toBe('trial'); // still in trial, nothing was created
 
-    const [subscriptionRow] = await db.select().from(subscriptions).where(eq(subscriptions.tenantId, tenant.tenantId));
-    expect(subscriptionRow).toBeUndefined();
+    // Nothing was created — the 404 GET /billing/subscription already
+    // returns here confirms it without a direct DB read.
+    const subscriptionRead = await request(app.getHttpServer())
+      .get('/api/billing/subscription')
+      .set('Authorization', `Bearer ${tenant.accessToken}`);
+    expect(subscriptionRead.status).toBe(404);
   });
 
   it('cobrança recusada marca past_due (com carência) e só bloqueia depois que a carência esgota', async () => {
     const tenant = await registerTenant(app, 'billing-carencia');
     const now = new Date();
-    const [subscription] = await db
-      .insert(subscriptions)
-      .values({ tenantId: tenant.tenantId, plan: 'starter', priceCents: 11_900, currentPeriodStart: now, currentPeriodEnd: now })
-      .returning();
+    const subscription = await runWithTenant(db, tenant.tenantId, async (tx) => {
+      const [row] = await tx
+        .insert(subscriptions)
+        .values({ tenantId: tenant.tenantId, plan: 'starter', priceCents: 11_900, currentPeriodStart: now, currentPeriodEnd: now })
+        .returning();
+      return row;
+    });
+    // Same reason as the renewal test above: this insert bypasses
+    // subscribe() (which is the only place that normally sets it), so the
+    // candidate pointer needs to be set by hand here too.
+    await db.update(tenants).set({ nextBillingCheckAt: now }).where(eq(tenants.id, tenant.tenantId));
 
     await billingService.processDueBilling();
 
     const [afterFirstFailure] = await db.select().from(tenants).where(eq(tenants.id, tenant.tenantId));
     expect(afterFirstFailure?.status).toBe('past_due'); // still has access — 5-day grace period
 
-    const [subscriptionAfterFirstFailure] = await db.select().from(subscriptions).where(eq(subscriptions.id, subscription!.id));
+    const subscriptionAfterFirstFailure = await runWithTenant(db, tenant.tenantId, async (tx) => {
+      const [row] = await tx.select().from(subscriptions).where(eq(subscriptions.id, subscription!.id));
+      return row;
+    });
     expect(subscriptionAfterFirstFailure?.status).toBe('past_due');
     expect(subscriptionAfterFirstFailure?.pastDueSince).not.toBeNull();
 
@@ -289,7 +317,9 @@ describe('Assinatura — inadimplência e carência (e2e)', () => {
 
     // Simulate an exhausted grace period: pastDueSince 10 days ago (grace period is 5).
     const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
-    await db.update(subscriptions).set({ pastDueSince: tenDaysAgo, currentPeriodEnd: tenDaysAgo }).where(eq(subscriptions.id, subscription!.id));
+    await runWithTenant(db, tenant.tenantId, (tx) =>
+      tx.update(subscriptions).set({ pastDueSince: tenDaysAgo, currentPeriodEnd: tenDaysAgo }).where(eq(subscriptions.id, subscription!.id)),
+    );
 
     await billingService.processDueBilling();
 
@@ -305,7 +335,9 @@ describe('Assinatura — inadimplência e carência (e2e)', () => {
     const processedAfterBlocked = await billingService.processDueBilling();
     expect(processedAfterBlocked).toBe(0);
 
-    const invoices = await db.select().from(subscriptionInvoices).where(eq(subscriptionInvoices.tenantId, tenant.tenantId));
+    const invoices = await runWithTenant(db, tenant.tenantId, (tx) =>
+      tx.select().from(subscriptionInvoices).where(eq(subscriptionInvoices.tenantId, tenant.tenantId)),
+    );
     expect(invoices).toHaveLength(2); // one per declined billing attempt (before and on the day the grace period expired)
     expect(invoices.every((invoice) => invoice.status === 'failed')).toBe(true);
   });
