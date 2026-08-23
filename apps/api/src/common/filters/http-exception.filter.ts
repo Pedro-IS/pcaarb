@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 import type { Response } from 'express';
 
 @Catch()
@@ -24,7 +25,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       : { message: 'Erro interno do servidor' };
 
     if (!isHttpException) {
+      // Only genuinely unexpected errors are reported — an HttpException
+      // (400/403/404/etc.) is expected control flow (a rejected sale, a
+      // failed login, bad input), not a bug to page anyone about. This call
+      // is a safe no-op whenever Sentry was never initialized (no
+      // SENTRY_DSN, or NODE_ENV=test) — see instrument.ts.
       this.logger.error(exception instanceof Error ? exception.stack : exception);
+      Sentry.captureException(exception);
     }
 
     response.status(status).json({

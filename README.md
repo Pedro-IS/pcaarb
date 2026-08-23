@@ -20,9 +20,9 @@ This README is a concise, English-language orientation for anyone evaluating the
 
 ## Stack
 
-TypeScript monorepo (pnpm workspaces + Turborepo). API: NestJS + Drizzle ORM + Postgres (row-level security enforced at the database level, not just the application layer), JWT auth with refresh-token rotation, CASL for authorization. Frontend: Next.js (App Router), TanStack Query, a service-worker-based PWA for the offline point-of-sale. Shared Zod schemas in `packages/shared` are the single source of truth for validation on both ends. External integrations (payment gateway, fiscal document issuance, transactional email, marketplace channels) are all behind internal adapter interfaces with a mock/sandbox implementation — swapping in a real provider is writing one new adapter class, not touching the rest of the system.
+TypeScript monorepo (pnpm workspaces + Turborepo). API: NestJS + Drizzle ORM + Postgres (row-level security enforced at the database level, not just the application layer), JWT auth with refresh-token rotation, CASL for authorization. Frontend: Next.js (App Router), TanStack Query, a service-worker-based PWA for the offline point-of-sale. Shared Zod schemas in `packages/shared` are the single source of truth for validation on both ends. External integrations (payment gateway, fiscal document issuance, transactional email, marketplace channels) are all behind internal adapter interfaces with a mock/sandbox implementation — swapping in a real provider is writing one new adapter class, not touching the rest of the system. Error tracking (Sentry) follows the same pattern: wired and ready, a no-op until `SENTRY_DSN` is set.
 
-Code comments and the UI (all ~25 pages in `apps/web`) are in English. What's still Portuguese, for now: API error/validation messages surfaced to the UI, and comments inside test files — a smaller, separate follow-up, since translating those touches e2e test assertions that check exact error text.
+Code, comments, and the UI (all ~25 pages in `apps/web`) are in English, including test files. What's still Portuguese, for now: API error/validation messages surfaced to the UI — a smaller, separate follow-up, since translating those touches e2e test assertions that check exact error text.
 
 ## Current status
 

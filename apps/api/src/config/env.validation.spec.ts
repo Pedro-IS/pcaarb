@@ -33,4 +33,12 @@ describe('validateEnv', () => {
       validateEnv({ ...validBaseEnv, JWT_ACCESS_SECRET: 'curto' }),
     ).toThrow(/JWT_ACCESS_SECRET/);
   });
+
+  it('SENTRY_DSN is optional and rejects a non-URL value when provided', () => {
+    expect(validateEnv(validBaseEnv).SENTRY_DSN).toBeUndefined();
+    expect(() => validateEnv({ ...validBaseEnv, SENTRY_DSN: 'not-a-url' })).toThrow(/SENTRY_DSN/);
+    expect(validateEnv({ ...validBaseEnv, SENTRY_DSN: 'https://key@o0.ingest.sentry.io/1' }).SENTRY_DSN).toBe(
+      'https://key@o0.ingest.sentry.io/1',
+    );
+  });
 });

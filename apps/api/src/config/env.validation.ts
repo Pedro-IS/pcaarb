@@ -17,6 +17,11 @@ export const envSchema = z.object({
   CORS_ORIGIN: z.string().url().default('http://localhost:3000'),
   RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY é obrigatória'),
   RESEND_FROM_EMAIL: z.string().email(),
+  // Optional — Sentry stays disabled (a no-op) until this is set. Read
+  // directly from process.env in instrument.ts, not via ConfigService (see
+  // that file for why); listed here too so the full set of env vars this
+  // app reads has one documented source.
+  SENTRY_DSN: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
