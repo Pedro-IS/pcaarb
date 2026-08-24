@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'motion/react';
 import { useForm } from 'react-hook-form';
 import { acceptInviteSchema, type AcceptInviteInput, type AuthTokens } from '@pcaarb/shared';
 import { apiFetch, ApiError } from '@/lib/api-client';
@@ -43,25 +42,19 @@ export function AcceptInviteForm() {
 
   if (!inviteId || !token) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6">
-        <p className="text-sm text-red-600">Invalid invite link. Ask whoever invited you for a new one.</p>
+      <>
+        <p className="text-sm text-danger">Invalid invite link. Ask whoever invited you for a new one.</p>
         <Link href="/login" className="text-sm font-medium text-accent hover:underline">
           Go to login
         </Link>
-      </main>
+      </>
     );
   }
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6"
-    >
+    <>
       <div>
-        <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Accept invite</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Accept invite</h1>
         <p className="mt-1 text-sm text-muted">Set your name and password to sign in to PCAARB.</p>
       </div>
 
@@ -75,21 +68,21 @@ export function AcceptInviteForm() {
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Your name</label>
           <Input {...register('name')} />
-          {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+          {errors.name && <p className="text-sm text-danger">{errors.name.message}</p>}
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Password</label>
           <Input type="password" autoComplete="new-password" {...register('password')} />
-          {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+          {errors.password && <p className="text-sm text-danger">{errors.password.message}</p>}
         </div>
 
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
           Accept invite and sign in
         </Button>
       </form>
-    </motion.main>
+    </>
   );
 }

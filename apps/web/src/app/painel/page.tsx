@@ -49,7 +49,7 @@ export default function PainelPage() {
   return (
     <>
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight text-balance">
           {me ? `Hi, ${me.user.name.split(' ')[0]}` : 'Dashboard'}
         </h1>
         {me ? (

@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
 import { useForm } from 'react-hook-form';
 import { registerTenantSchema, type AuthTokens, type RegisterTenantInput } from '@pcaarb/shared';
 import { apiFetch, ApiError } from '@/lib/api-client';
@@ -36,15 +35,9 @@ export default function RegisterPage() {
   });
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6 py-16"
-    >
+    <>
       <div>
-        <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Create account</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Create account</h1>
         <p className="mt-1 text-sm text-muted">
           Start selling today — {process.env.NEXT_PUBLIC_TRIAL_DAYS ?? '14'} days free.
         </p>
@@ -71,7 +64,7 @@ export default function RegisterPage() {
           <Input type="password" autoComplete="new-password" {...register('password')} />
         </Field>
 
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
           Create free account
@@ -84,7 +77,7 @@ export default function RegisterPage() {
           Sign in
         </Link>
       </p>
-    </motion.main>
+    </>
   );
 }
 
@@ -101,7 +94,7 @@ function Field({
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium">{label}</label>
       {children}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   );
 }

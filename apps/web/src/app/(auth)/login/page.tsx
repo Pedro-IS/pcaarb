@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
 import { useForm } from 'react-hook-form';
 import { loginSchema, type AuthTokens, type LoginInput } from '@pcaarb/shared';
 import { apiFetch, ApiError } from '@/lib/api-client';
@@ -35,15 +34,9 @@ export default function LoginPage() {
   });
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6"
-    >
+    <>
       <div>
-        <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Sign in</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
         <p className="mt-1 text-sm text-muted">Access your store&apos;s dashboard.</p>
       </div>
 
@@ -53,7 +46,7 @@ export default function LoginPage() {
             Email
           </label>
           <Input id="email" type="email" autoComplete="email" {...register('email')} />
-          {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
+          {errors.email && <p className="text-sm text-danger">{errors.email.message}</p>}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -66,10 +59,10 @@ export default function LoginPage() {
             </Link>
           </div>
           <Input id="password" type="password" autoComplete="current-password" {...register('password')} />
-          {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+          {errors.password && <p className="text-sm text-danger">{errors.password.message}</p>}
         </div>
 
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
 
         <Button type="submit" loading={mutation.isPending}>
           Sign in
@@ -82,6 +75,6 @@ export default function LoginPage() {
           Register your store
         </Link>
       </p>
-    </motion.main>
+    </>
   );
 }

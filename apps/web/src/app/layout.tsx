@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ServiceWorkerRegister } from "./sw-register";
+import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // The no-flash script (below) sets data-theme on this element before
+      // hydration, from localStorage — a value the server can't know.
+      // Standard, accepted mismatch for this exact pattern (same as
+      // next-themes): React just keeps the client's DOM as-is, nothing to fix.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegister />
         <Providers>{children}</Providers>

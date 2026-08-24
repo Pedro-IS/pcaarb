@@ -1,40 +1,111 @@
 @import 'tailwindcss';
 
+/*
+ * Theme resolution order (three states, not two):
+ * 1. No explicit choice, OS light  -> :root defaults below.
+ * 2. No explicit choice, OS dark   -> the prefers-color-scheme block.
+ * 3. Explicit choice (ThemeToggle, persisted to localStorage, applied as
+ *    data-theme on <html> by the inline no-flash script in layout.tsx)
+ *    -> the [data-theme="..."] blocks, which win over OS preference either way.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #18181b;
+  --background: #faf9f5;
+  --foreground: #201e1b;
   --card: #ffffff;
-  --border: #e4e4e7;
-  --muted: #71717a;
-  --accent: #4f46e5;
+  --card-hover: #f4f2ec;
+  --border: #e6e1d6;
+  --muted: #7a756a;
+  --accent: #0c7c8c;
   --accent-foreground: #ffffff;
-  --accent-soft: #eef2ff;
+  --accent-soft: #e3f2f3;
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --warning-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-foreground: #ffffff;
+  --danger-soft: #fee2e2;
+  --info: #1d4ed8;
+  --info-foreground: #ffffff;
+  --info-soft: #dbeafe;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: #17181b;
+    --foreground: #f2f0ea;
+    --card: #1e2023;
+    --card-hover: #24272b;
+    --border: #2c2e33;
+    --muted: #9b968a;
+    --accent: #2dbfd1;
+    --accent-foreground: #08191b;
+    --accent-soft: #123239;
+    --success: #34d399;
+    --success-foreground: #06281a;
+    --success-soft: #0c2c1f;
+    --warning: #fbbf24;
+    --warning-foreground: #2e2107;
+    --warning-soft: #2e2107;
+    --danger: #f87171;
+    --danger-foreground: #2e1212;
+    --danger-soft: #2e1212;
+    --info: #60a5fa;
+    --info-foreground: #14213d;
+    --info-soft: #14213d;
+  }
+}
+
+:root[data-theme='dark'] {
+  --background: #17181b;
+  --foreground: #f2f0ea;
+  --card: #1e2023;
+  --card-hover: #24272b;
+  --border: #2c2e33;
+  --muted: #9b968a;
+  --accent: #2dbfd1;
+  --accent-foreground: #08191b;
+  --accent-soft: #123239;
+  --success: #34d399;
+  --success-foreground: #06281a;
+  --success-soft: #0c2c1f;
+  --warning: #fbbf24;
+  --warning-foreground: #2e2107;
+  --warning-soft: #2e2107;
+  --danger: #f87171;
+  --danger-foreground: #2e1212;
+  --danger-soft: #2e1212;
+  --info: #60a5fa;
+  --info-foreground: #14213d;
+  --info-soft: #14213d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --card: #18181b;
-    --border: #27272a;
-    --muted: #a1a1aa;
-    --accent: #818cf8;
-    --accent-foreground: #09090b;
-    --accent-soft: #1e1b4b;
-  }
 }
 
 body {

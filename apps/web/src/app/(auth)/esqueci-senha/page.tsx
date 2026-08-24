@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
-import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@pcaarb/shared';
@@ -28,15 +27,9 @@ export default function ForgotPasswordPage() {
   });
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6"
-    >
+    <>
       <div>
-        <p className="text-sm font-semibold tracking-tight text-accent">PCAARB</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Forgot my password</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Forgot my password</h1>
         <p className="mt-1 text-sm text-muted">Enter your account email to receive a reset link.</p>
       </div>
 
@@ -52,7 +45,7 @@ export default function ForgotPasswordPage() {
               Email
             </label>
             <Input id="email" type="email" autoComplete="email" {...register('email')} />
-            {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
+            {errors.email && <p className="text-sm text-danger">{errors.email.message}</p>}
           </div>
 
           <Button type="submit" loading={mutation.isPending}>
@@ -66,6 +59,6 @@ export default function ForgotPasswordPage() {
           Back to login
         </Link>
       </p>
-    </motion.main>
+    </>
   );
 }

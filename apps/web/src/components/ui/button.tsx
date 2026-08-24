@@ -9,9 +9,9 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'bg-accent text-accent-foreground hover:opacity-90',
-  secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-50 dark:hover:bg-zinc-700',
-  ghost: 'bg-transparent text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800',
-  danger: 'bg-red-600 text-white hover:bg-red-500',
+  secondary: 'bg-card-hover text-foreground ring-1 ring-border hover:bg-border/60',
+  ghost: 'bg-transparent text-muted hover:bg-card-hover hover:text-foreground',
+  danger: 'bg-danger text-danger-foreground hover:opacity-90',
 };
 
 interface ButtonProps extends Omit<ComponentProps<typeof motion.button>, 'children'> {

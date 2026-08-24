@@ -30,6 +30,7 @@ import { apiFetch } from '@/lib/api-client';
 import { ROLE_LABELS } from '@/lib/role-labels';
 import { useCurrentUser } from '@/lib/use-current-user';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface NavLink {
   href: string;
@@ -98,9 +99,7 @@ function isActive(pathname: string, href: string) {
 const navLinkClass = (active: boolean) =>
   cn(
     'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-    active
-      ? 'bg-accent-soft text-accent'
-      : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800',
+    active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-card-hover hover:text-foreground',
   );
 
 function NavGroup({
@@ -240,8 +239,11 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-6">
-        <Link href="/painel" className="text-sm font-semibold tracking-tight">
-          PCAARB
+        <Link href="/painel" className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[11px] font-bold text-accent-foreground">
+            P
+          </span>
+          <span className="text-sm font-semibold tracking-tight">PCAARB</span>
         </Link>
 
         <NavBar key={pathname} />
@@ -260,10 +262,11 @@ export function Topbar() {
               <Skeleton className="h-3 w-16" />
             </div>
           )}
+          <ThemeToggle />
           <button
             type="button"
             onClick={logout}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-card-hover hover:text-foreground"
             title="Log out"
           >
             <LogOut className="h-4 w-4" />

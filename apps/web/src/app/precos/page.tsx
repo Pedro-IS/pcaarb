@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 import { SUBSCRIPTION_PLAN_CATALOG, type SubscribablePlan } from '@pcaarb/shared';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { formatCentsToBRL } from '@/lib/currency';
@@ -21,15 +22,13 @@ const PLAN_FEATURES: Record<SubscribablePlan, string[]> = {
 
 export default function PrecosPage() {
   return (
-    <main className="flex flex-1 flex-col items-center gap-10 bg-zinc-50 px-6 py-16 dark:bg-black">
+    <main className="flex flex-1 flex-col items-center gap-10 px-6 py-16">
       <div className="flex flex-col items-center gap-3 text-center">
-        <span className="text-sm font-medium uppercase tracking-widest text-zinc-500">PCAARB</span>
-        <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Pricing</span>
+        <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           Transparent pricing, no setup contract
         </h1>
-        <p className="max-w-md text-zinc-600 dark:text-zinc-400">
-          14 days free on any plan. Cancel anytime, no penalty.
-        </p>
+        <p className="max-w-md text-muted">14 days free on any plan. Cancel anytime, no penalty.</p>
       </div>
 
       <div className="grid w-full max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
@@ -39,11 +38,20 @@ export default function PrecosPage() {
           return (
             <Card
               key={plan}
-              className={`flex flex-col gap-4 ${highlighted ? 'border-accent ring-1 ring-accent' : ''}`}
+              className={
+                highlighted
+                  ? 'relative flex flex-col gap-4 border-accent shadow-lg ring-1 ring-accent sm:-translate-y-2'
+                  : 'flex flex-col gap-4'
+              }
             >
+              {highlighted && (
+                <Badge variant="accent" className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  Most popular
+                </Badge>
+              )}
               <div>
                 <h2 className="font-medium">{catalog.label}</h2>
-                <p className="mt-1 text-3xl font-semibold">
+                <p className="mt-1 text-3xl font-semibold tabular-nums">
                   {formatCentsToBRL(catalog.priceCents)}
                   <span className="text-sm font-normal text-muted">/month</span>
                 </p>
