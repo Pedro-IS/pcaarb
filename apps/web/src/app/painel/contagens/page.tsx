@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 function diffLabel(expected: number, counted: number | null): string {
   if (counted === null) return '—';
@@ -23,7 +24,7 @@ function diffLabel(expected: number, counted: number | null): string {
 
 function diffClassName(expected: number, counted: number | null): string {
   if (counted === null || counted === expected) return 'text-muted';
-  return counted > expected ? 'text-green-600' : 'text-red-600';
+  return counted > expected ? 'text-success' : 'text-danger';
 }
 
 export default function ContagensPage() {
@@ -129,55 +130,53 @@ export default function ContagensPage() {
           {activeCount.items.length === 0 ? (
             <EmptyState icon={PackageSearch} message="No products with stock tracking to count." />
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-sm">
-                <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                  <tr>
-                    <th className="px-4 py-2 font-medium">Product</th>
-                    <th className="px-4 py-2 font-medium">System</th>
-                    <th className="px-4 py-2 font-medium">Counted</th>
-                    <th className="px-4 py-2 font-medium">Difference</th>
-                    <th className="px-4 py-2 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeCount.items.map((item) => {
-                    const draft = draftValues[item.id] ?? (item.countedQuantity !== null ? String(item.countedQuantity) : '');
-                    const parsed = draft === '' ? null : Number.parseInt(draft, 10);
-                    return (
-                      <tr key={item.id} className="border-t border-border">
-                        <td className="px-4 py-2">{item.productName}</td>
-                        <td className="px-4 py-2 text-muted">{item.expectedQuantity}</td>
-                        <td className="px-4 py-2">
-                          <Input
-                            className="w-24"
-                            value={draft}
-                            onChange={(e) => setDraftValues((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                          />
-                        </td>
-                        <td className={`px-4 py-2 ${diffClassName(item.expectedQuantity, item.countedQuantity)}`}>
-                          {diffLabel(item.expectedQuantity, item.countedQuantity)}
-                        </td>
-                        <td className="px-4 py-2 text-right">
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-1 text-xs text-accent hover:underline disabled:opacity-50"
-                            disabled={parsed === null || Number.isNaN(parsed) || parsed < 0 || setItemMutation.isPending}
-                            onClick={() =>
-                              parsed !== null &&
-                              setItemMutation.mutate({ countId: activeCount.id, itemId: item.id, countedQuantity: parsed })
-                            }
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                            Save
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <tr>
+                  <TableHead>Product</TableHead>
+                  <TableHead>System</TableHead>
+                  <TableHead>Counted</TableHead>
+                  <TableHead>Difference</TableHead>
+                  <TableHead></TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {activeCount.items.map((item) => {
+                  const draft = draftValues[item.id] ?? (item.countedQuantity !== null ? String(item.countedQuantity) : '');
+                  const parsed = draft === '' ? null : Number.parseInt(draft, 10);
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.productName}</TableCell>
+                      <TableCell numeric className="text-muted">{item.expectedQuantity}</TableCell>
+                      <TableCell>
+                        <Input
+                          className="w-24"
+                          value={draft}
+                          onChange={(e) => setDraftValues((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                        />
+                      </TableCell>
+                      <TableCell numeric className={diffClassName(item.expectedQuantity, item.countedQuantity)}>
+                        {diffLabel(item.expectedQuantity, item.countedQuantity)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline disabled:opacity-50"
+                          disabled={parsed === null || Number.isNaN(parsed) || parsed < 0 || setItemMutation.isPending}
+                          onClick={() =>
+                            parsed !== null &&
+                            setItemMutation.mutate({ countId: activeCount.id, itemId: item.id, countedQuantity: parsed })
+                          }
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          Save
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           )}
         </Card>
       ) : (
@@ -196,42 +195,44 @@ export default function ContagensPage() {
         <h2 className="text-sm font-medium text-muted">
           {countsQuery.data ? `${countsQuery.data.length} count(s)` : ''}
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!countsQuery.data ? (
+        {!countsQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={3} cols={4} />
-          ) : countsQuery.data.length === 0 ? (
+          </div>
+        ) : countsQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={ClipboardList} message="No stock counts yet." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Opened on</th>
-                  <th className="px-4 py-2 font-medium">Items</th>
-                  <th className="px-4 py-2 font-medium">Notes</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {countsQuery.data.map((count) => (
-                  <tr key={count.id} className="border-t border-border">
-                    <td className="px-4 py-2">{new Date(count.createdAt).toLocaleDateString('pt-BR')}</td>
-                    <td className="px-4 py-2">{count.items.length}</td>
-                    <td className="px-4 py-2 text-muted">{count.notes ?? '—'}</td>
-                    <td className="px-4 py-2">
-                      {count.status === 'completed' ? (
-                        <Badge variant="success">Finalized</Badge>
-                      ) : count.status === 'canceled' ? (
-                        <Badge variant="neutral">Canceled</Badge>
-                      ) : (
-                        <Badge variant="warning">In progress</Badge>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Opened on</TableHead>
+                <TableHead>Items</TableHead>
+                <TableHead>Notes</TableHead>
+                <TableHead>Status</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {countsQuery.data.map((count) => (
+                <TableRow key={count.id}>
+                  <TableCell>{new Date(count.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                  <TableCell numeric>{count.items.length}</TableCell>
+                  <TableCell className="text-muted">{count.notes ?? '—'}</TableCell>
+                  <TableCell>
+                    {count.status === 'completed' ? (
+                      <Badge variant="success">Finalized</Badge>
+                    ) : count.status === 'canceled' ? (
+                      <Badge variant="neutral">Canceled</Badge>
+                    ) : (
+                      <Badge variant="warning">In progress</Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

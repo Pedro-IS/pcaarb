@@ -13,10 +13,12 @@ import { formatCentsToBRL, parseBRLToCents } from '@/lib/currency';
 import { useAccessToken } from '@/lib/use-access-token';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const productFormSchema = z.object({
   name: z.string().min(2, 'Name too short'),
@@ -131,7 +133,7 @@ export default function ProdutosPage() {
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Name</label>
             <Input {...register('name')} />
-            {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+            {errors.name && <p className="text-sm text-danger">{errors.name.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">SKU</label>
@@ -140,21 +142,21 @@ export default function ProdutosPage() {
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Price (R$)</label>
             <Input placeholder="0.00" {...register('priceReais')} />
-            {errors.priceReais && <p className="text-sm text-red-600">{errors.priceReais.message}</p>}
+            {errors.priceReais && <p className="text-sm text-danger">{errors.priceReais.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Category</label>
-            <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('categoryId')}>
+            <Select {...register('categoryId')}>
               <option value="">No category</option>
               {categoriesQuery.data?.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
         <Button type="submit" loading={createMutation.isPending} className="self-start">
           Add product
         </Button>
@@ -180,111 +182,114 @@ export default function ProdutosPage() {
         <h2 className="text-sm font-medium text-muted">
           {productsQuery.data ? `${productsQuery.data.length} product(s)` : ''}
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!productsQuery.data ? (
+        {!productsQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={4} cols={5} />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Name</th>
-                  <th className="px-4 py-2 font-medium">SKU</th>
-                  <th className="px-4 py-2 font-medium">Price</th>
-                  <th className="px-4 py-2 font-medium">Stock</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {productsQuery.data.map((product) => (
-                  <Fragment key={product.id}>
-                    <tr className="border-t border-border">
-                      <td className="px-4 py-2">{product.name}</td>
-                      <td className="px-4 py-2 text-muted">{product.sku ?? '—'}</td>
-                      <td className="px-4 py-2">{formatCentsToBRL(product.priceCents)}</td>
-                      <td className="px-4 py-2">
-                        {product.trackStock ? product.stockQuantity : <span className="text-zinc-400">—</span>}
-                      </td>
-                      <td className="px-4 py-2">
-                        <Badge variant={product.active ? 'success' : 'neutral'}>
-                          {product.active ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        {product.trackStock && (
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                            onClick={() => {
-                              setStockError(null);
-                              setStockFormProductId(stockFormProductId === product.id ? null : product.id);
-                            }}
-                          >
-                            <SlidersHorizontal className="h-3.5 w-3.5" />
-                            Move stock
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                    <AnimatePresence initial={false}>
-                      {stockFormProductId === product.id && (
-                        <motion.tr
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="border-t border-border bg-zinc-50 dark:bg-zinc-900"
+          </div>
+        ) : productsQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
+            <EmptyState icon={Package} message="No products registered yet." />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Name</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {productsQuery.data.map((product) => (
+                <Fragment key={product.id}>
+                  <TableRow>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell className="text-muted">{product.sku ?? '—'}</TableCell>
+                    <TableCell numeric>{formatCentsToBRL(product.priceCents)}</TableCell>
+                    <TableCell numeric>
+                      {product.trackStock ? product.stockQuantity : <span className="text-muted">—</span>}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={product.active ? 'success' : 'neutral'}>
+                        {product.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {product.trackStock && (
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                          onClick={() => {
+                            setStockError(null);
+                            setStockFormProductId(stockFormProductId === product.id ? null : product.id);
+                          }}
                         >
-                          <td className="px-4 py-3" colSpan={6}>
-                            <div className="flex flex-wrap items-end gap-3">
-                              <div className="flex flex-col gap-1.5">
-                                <label className="text-xs">Type</label>
-                                <select
-                                  className="h-9 rounded-md border border-border bg-card px-2 text-sm"
-                                  value={stockType}
-                                  onChange={(e) => setStockType(e.target.value as typeof stockType)}
-                                >
-                                  <option value="entrada">Stock in</option>
-                                  <option value="saida">Stock out</option>
-                                  <option value="ajuste">Adjustment (count correction)</option>
-                                </select>
-                              </div>
-                              <div className="flex flex-col gap-1.5">
-                                <label className="text-xs">
-                                  {stockType === 'ajuste' ? 'Delta (can be negative)' : 'Quantity'}
-                                </label>
-                                <Input
-                                  className="w-28"
-                                  value={stockQuantity}
-                                  onChange={(e) => setStockQuantity(e.target.value)}
-                                  placeholder={stockType === 'ajuste' ? '-5' : '0'}
-                                />
-                              </div>
-                              <div className="flex flex-col gap-1.5">
-                                <label className="text-xs">Reason (optional)</label>
-                                <Input className="w-48" value={stockReason} onChange={(e) => setStockReason(e.target.value)} />
-                              </div>
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                disabled={!stockQuantity}
-                                loading={stockMovementMutation.isPending}
-                                onClick={() => stockMovementMutation.mutate(product.id)}
-                              >
-                                Confirm
-                              </Button>
-                              {stockError && <p className="text-sm text-red-600">{stockError}</p>}
-                            </div>
-                          </td>
-                        </motion.tr>
+                          <SlidersHorizontal className="h-3.5 w-3.5" />
+                          Move stock
+                        </button>
                       )}
-                    </AnimatePresence>
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {productsQuery.data?.length === 0 && <EmptyState icon={Package} message="No products registered yet." />}
-        </div>
+                    </TableCell>
+                  </TableRow>
+                  <AnimatePresence initial={false}>
+                    {stockFormProductId === product.id && (
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="border-t border-border bg-card-hover"
+                      >
+                        <td className="px-4 py-3" colSpan={6}>
+                          <div className="flex flex-wrap items-end gap-3">
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-xs">Type</label>
+                              <Select
+                                className="h-9"
+                                value={stockType}
+                                onChange={(e) => setStockType(e.target.value as typeof stockType)}
+                              >
+                                <option value="entrada">Stock in</option>
+                                <option value="saida">Stock out</option>
+                                <option value="ajuste">Adjustment (count correction)</option>
+                              </Select>
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-xs">
+                                {stockType === 'ajuste' ? 'Delta (can be negative)' : 'Quantity'}
+                              </label>
+                              <Input
+                                className="w-28"
+                                value={stockQuantity}
+                                onChange={(e) => setStockQuantity(e.target.value)}
+                                placeholder={stockType === 'ajuste' ? '-5' : '0'}
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-xs">Reason (optional)</label>
+                              <Input className="w-48" value={stockReason} onChange={(e) => setStockReason(e.target.value)} />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              disabled={!stockQuantity}
+                              loading={stockMovementMutation.isPending}
+                              onClick={() => stockMovementMutation.mutate(product.id)}
+                            >
+                              Confirm
+                            </Button>
+                            {stockError && <p className="text-sm text-danger">{stockError}</p>}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    )}
+                  </AnimatePresence>
+                </Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

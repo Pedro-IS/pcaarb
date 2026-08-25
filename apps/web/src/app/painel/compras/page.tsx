@@ -12,10 +12,12 @@ import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { PurchaseOrderPrint } from '@/components/compras/purchase-order-print';
 
 interface OrderLine {
@@ -165,18 +167,14 @@ export default function ComprasPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Supplier</label>
-            <select
-              className="h-10 rounded-md border border-border bg-card px-3 text-sm"
-              value={selectedSupplierId}
-              onChange={(e) => setSelectedSupplierId(e.target.value)}
-            >
+            <Select value={selectedSupplierId} onChange={(e) => setSelectedSupplierId(e.target.value)}>
               <option value="">Select...</option>
               {suppliersQuery.data?.map((supplier) => (
                 <option key={supplier.id} value={supplier.id}>
                   {supplier.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Notes (optional)</label>
@@ -189,8 +187,7 @@ export default function ComprasPage() {
           <div className="flex flex-wrap items-end gap-2">
             <div className="flex flex-1 flex-col gap-1.5">
               <label className="text-sm">Product</label>
-              <select
-                className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+              <Select
                 value={selectedProductId}
                 onChange={(e) => {
                   setSelectedProductId(e.target.value);
@@ -206,7 +203,7 @@ export default function ComprasPage() {
                     {product.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="flex w-20 flex-col gap-1.5">
               <label className="text-sm">Qty.</label>
@@ -253,17 +250,17 @@ export default function ComprasPage() {
                     className="border-t border-border"
                   >
                     <td className="py-1.5">{line.name}</td>
-                    <td className="py-1.5">{line.quantity}</td>
-                    <td className="py-1.5">
+                    <td className="py-1.5 tabular-nums">{line.quantity}</td>
+                    <td className="py-1.5 font-mono tabular-nums">
                       {formatCentsToBRL(parseBRLToCents(line.unitCostReais))}
                     </td>
-                    <td className="py-1.5">
+                    <td className="py-1.5 font-mono tabular-nums">
                       {formatCentsToBRL(parseBRLToCents(line.unitCostReais) * line.quantity)}
                     </td>
                     <td className="py-1.5">
                       <button
                         type="button"
-                        className="text-red-600 transition-colors hover:text-red-500"
+                        className="text-danger transition-colors hover:opacity-75"
                         onClick={() => removeLine(line.productId)}
                         aria-label="Remove"
                       >
@@ -279,10 +276,10 @@ export default function ComprasPage() {
             <EmptyState icon={Package} message="No items added yet." />
           )}
 
-          <p className="self-end text-sm font-semibold">Total: {formatCentsToBRL(totalCents)}</p>
+          <p className="self-end text-sm font-semibold tabular-nums">Total: {formatCentsToBRL(totalCents)}</p>
         </div>
 
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
+        {formError && <p className="text-sm text-danger">{formError}</p>}
 
         <Button
           className="self-start"
@@ -298,118 +295,113 @@ export default function ComprasPage() {
         <h2 className="text-sm font-medium text-muted">
           {ordersQuery.data ? `${ordersQuery.data.length} order(s)` : ''}
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!ordersQuery.data ? (
+        {!ordersQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={4} cols={6} />
-          ) : ordersQuery.data.length === 0 ? (
+          </div>
+        ) : ordersQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={ShoppingBag} message="No purchase orders yet." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Supplier</th>
-                  <th className="px-4 py-2 font-medium">Items</th>
-                  <th className="px-4 py-2 font-medium">Total</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium">Created on</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {ordersQuery.data.map((order) => {
-                  const isExpanded = expandedId === order.id;
-                  const supplier = suppliersQuery.data?.find((s) => s.id === order.supplierId);
-                  return (
-                    <Fragment key={order.id}>
-                      <tr
-                        className="cursor-pointer border-t border-border hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-                        onClick={() => setExpandedId(isExpanded ? null : order.id)}
-                      >
-                        <td className="px-4 py-2">
-                          {supplierNameById.get(order.supplierId) ?? '—'}
-                        </td>
-                        <td className="px-4 py-2">{order.items.length}</td>
-                        <td className="px-4 py-2">{formatCentsToBRL(order.totalCents)}</td>
-                        <td className="px-4 py-2">
-                          {order.status === 'received' ? (
-                            <Badge variant="success">Received</Badge>
-                          ) : order.status === 'canceled' ? (
-                            <Badge variant="neutral">Canceled</Badge>
-                          ) : (
-                            <Badge variant="warning">Draft</Badge>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Supplier</TableHead>
+                <TableHead>Items</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created on</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {ordersQuery.data.map((order) => {
+                const isExpanded = expandedId === order.id;
+                const supplier = suppliersQuery.data?.find((s) => s.id === order.supplierId);
+                return (
+                  <Fragment key={order.id}>
+                    <TableRow className="cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : order.id)}>
+                      <TableCell>{supplierNameById.get(order.supplierId) ?? '—'}</TableCell>
+                      <TableCell numeric>{order.items.length}</TableCell>
+                      <TableCell numeric>{formatCentsToBRL(order.totalCents)}</TableCell>
+                      <TableCell>
+                        {order.status === 'received' ? (
+                          <Badge variant="success">Received</Badge>
+                        ) : order.status === 'canceled' ? (
+                          <Badge variant="neutral">Canceled</Badge>
+                        ) : (
+                          <Badge variant="warning">Draft</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{new Date(order.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell className="text-right">
+                        <div
+                          className="flex items-center justify-end gap-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {order.status === 'draft' && (
+                            <>
+                              <button
+                                type="button"
+                                className="text-xs text-success hover:underline"
+                                disabled={receiveMutation.isPending}
+                                onClick={() => receiveMutation.mutate(order.id)}
+                              >
+                                Receive
+                              </button>
+                              <button
+                                type="button"
+                                className="text-xs text-muted hover:underline"
+                                disabled={cancelMutation.isPending}
+                                onClick={() => cancelMutation.mutate(order.id)}
+                              >
+                                Cancel
+                              </button>
+                            </>
                           )}
-                        </td>
-                        <td className="px-4 py-2">
-                          {new Date(order.createdAt).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className="px-4 py-2 text-right">
-                          <div
-                            className="flex items-center justify-end gap-3"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {order.status === 'draft' && (
-                              <>
-                                <button
-                                  type="button"
-                                  className="text-xs text-green-600 hover:underline"
-                                  disabled={receiveMutation.isPending}
-                                  onClick={() => receiveMutation.mutate(order.id)}
-                                >
-                                  Receive
-                                </button>
-                                <button
-                                  type="button"
-                                  className="text-xs text-muted hover:underline"
-                                  disabled={cancelMutation.isPending}
-                                  onClick={() => cancelMutation.mutate(order.id)}
-                                >
-                                  Cancel
-                                </button>
-                              </>
-                            )}
-                            <ChevronDown
-                              className={`h-4 w-4 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                              onClick={() => setExpandedId(isExpanded ? null : order.id)}
-                            />
-                          </div>
+                          <ChevronDown
+                            className={`h-4 w-4 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={6} className="p-0">
+                          <AnimatePresence>
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="flex flex-col gap-3 border-t border-border bg-card-hover px-4 py-3"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted">
+                                  Order {order.id.slice(0, 8)}
+                                </span>
+                                <Button variant="secondary" onClick={() => window.print()}>
+                                  <Printer className="h-4 w-4" />
+                                  Print order
+                                </Button>
+                              </div>
+                              <PurchaseOrderPrint
+                                order={order}
+                                companyName={meQuery.data?.tenant.companyName ?? ''}
+                                supplier={supplier}
+                              />
+                            </motion.div>
+                          </AnimatePresence>
                         </td>
                       </tr>
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={6} className="p-0">
-                            <AnimatePresence>
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="flex flex-col gap-3 border-t border-border bg-zinc-50 px-4 py-3 dark:bg-zinc-900/50"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-muted">
-                                    Order {order.id.slice(0, 8)}
-                                  </span>
-                                  <Button variant="secondary" onClick={() => window.print()}>
-                                    <Printer className="h-4 w-4" />
-                                    Print order
-                                  </Button>
-                                </div>
-                                <PurchaseOrderPrint
-                                  order={order}
-                                  companyName={meQuery.data?.tenant.companyName ?? ''}
-                                  supplier={supplier}
-                                />
-                              </motion.div>
-                            </AnimatePresence>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

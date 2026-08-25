@@ -9,6 +9,7 @@ import { useCurrentUser } from '@/lib/use-current-user';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const ACTION_LABELS: Record<string, string> = {
   'user.role_updated': 'User role changed',
@@ -79,36 +80,38 @@ export default function AuditoriaPage() {
       <h1 className="text-2xl font-semibold tracking-tight">Audit Log</h1>
       <p className="text-sm text-muted">Sensitive tenant actions — role changes, permissions, subscription, returns, password, and account lockout.</p>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        {!logsQuery.data ? (
+      {!logsQuery.data ? (
+        <div className="rounded-lg border border-border">
           <SkeletonRows rows={8} cols={4} />
-        ) : logsQuery.data.length === 0 ? (
+        </div>
+      ) : logsQuery.data.length === 0 ? (
+        <div className="rounded-lg border border-border">
           <EmptyState icon={ScrollText} message="No actions recorded yet." />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-              <tr>
-                <th className="px-4 py-2 font-medium">Date</th>
-                <th className="px-4 py-2 font-medium">Action</th>
-                <th className="px-4 py-2 font-medium">Actor</th>
-                <th className="px-4 py-2 font-medium">Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logsQuery.data.map((log) => (
-                <tr key={log.id} className="border-t border-border">
-                  <td className="px-4 py-2 whitespace-nowrap">{formatDateTime(log.createdAt)}</td>
-                  <td className="px-4 py-2">{ACTION_LABELS[log.action] ?? log.action}</td>
-                  <td className="px-4 py-2">{actorName(log.actorUserId)}</td>
-                  <td className="px-4 py-2 font-mono text-xs text-muted">
-                    {log.metadata ? JSON.stringify(log.metadata) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Date</TableHead>
+              <TableHead>Action</TableHead>
+              <TableHead>Actor</TableHead>
+              <TableHead>Details</TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {logsQuery.data.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell className="whitespace-nowrap">{formatDateTime(log.createdAt)}</TableCell>
+                <TableCell>{ACTION_LABELS[log.action] ?? log.action}</TableCell>
+                <TableCell>{actorName(log.actorUserId)}</TableCell>
+                <TableCell className="font-mono text-xs text-muted">
+                  {log.metadata ? JSON.stringify(log.metadata) : '—'}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </>
   );
 }

@@ -23,7 +23,9 @@ import { Button } from '@/components/ui/button';
 import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { SaleReceipt } from '@/components/pdv/sale-receipt';
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
@@ -123,7 +125,7 @@ function SaleDetail({
   const hasQuantityToReturn = Object.values(returnQuantities).some((q) => Number(q) > 0);
 
   return (
-    <div className="flex flex-col gap-3 border-t border-border bg-zinc-50 px-4 py-3 dark:bg-zinc-900/50">
+    <div className="flex flex-col gap-3 border-t border-border bg-card-hover px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1 text-sm">
           <span className="text-muted">
@@ -131,12 +133,12 @@ function SaleDetail({
             {sale.id.slice(0, 8)}
           </span>
           {sale.fiscalDocument?.status === 'authorized' && (
-            <span className="text-xs text-zinc-600 dark:text-zinc-400">
+            <span className="text-xs text-muted">
               NFC-e authorized — key {sale.fiscalDocument.accessKey}
             </span>
           )}
           {sale.fiscalDocument?.status === 'rejected' && (
-            <span className="text-xs text-amber-700 dark:text-amber-500">
+            <span className="text-xs text-warning">
               NFC-e not issued: {sale.fiscalDocument.rejectionReason}
             </span>
           )}
@@ -165,49 +167,47 @@ function SaleDetail({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-            <tr>
-              <th className="px-3 py-1.5 font-medium">Product</th>
-              <th className="px-3 py-1.5 font-medium">Qty</th>
-              <th className="px-3 py-1.5 font-medium">Unit price</th>
-              <th className="px-3 py-1.5 font-medium">Total</th>
-              {returnFormOpen && <th className="px-3 py-1.5 font-medium">Return</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {sale.items.map((item) => {
-              const returnable = remaining(item.id, item.quantity);
-              return (
-                <tr key={item.id} className="border-t border-border">
-                  <td className="px-3 py-1.5">{item.productName}</td>
-                  <td className="px-3 py-1.5">{item.quantity}</td>
-                  <td className="px-3 py-1.5">{formatCentsToBRL(item.unitPriceCents)}</td>
-                  <td className="px-3 py-1.5">{formatCentsToBRL(item.totalCents)}</td>
-                  {returnFormOpen && (
-                    <td className="px-3 py-1.5">
-                      {returnable > 0 ? (
-                        <Input
-                          type="number"
-                          min={0}
-                          max={returnable}
-                          placeholder="0"
-                          className="h-8 w-20"
-                          value={returnQuantities[item.id] ?? ''}
-                          onChange={(e) => setReturnQuantities((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                        />
-                      ) : (
-                        <span className="text-xs text-muted">already returned</span>
-                      )}
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <tr>
+            <TableHead className="px-3 py-1.5">Product</TableHead>
+            <TableHead className="px-3 py-1.5">Qty</TableHead>
+            <TableHead className="px-3 py-1.5">Unit price</TableHead>
+            <TableHead className="px-3 py-1.5">Total</TableHead>
+            {returnFormOpen && <TableHead className="px-3 py-1.5">Return</TableHead>}
+          </tr>
+        </TableHeader>
+        <TableBody>
+          {sale.items.map((item) => {
+            const returnable = remaining(item.id, item.quantity);
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="px-3 py-1.5">{item.productName}</TableCell>
+                <TableCell className="px-3 py-1.5" numeric>{item.quantity}</TableCell>
+                <TableCell className="px-3 py-1.5" numeric>{formatCentsToBRL(item.unitPriceCents)}</TableCell>
+                <TableCell className="px-3 py-1.5" numeric>{formatCentsToBRL(item.totalCents)}</TableCell>
+                {returnFormOpen && (
+                  <TableCell className="px-3 py-1.5">
+                    {returnable > 0 ? (
+                      <Input
+                        type="number"
+                        min={0}
+                        max={returnable}
+                        placeholder="0"
+                        className="h-8 w-20"
+                        value={returnQuantities[item.id] ?? ''}
+                        onChange={(e) => setReturnQuantities((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                      />
+                    ) : (
+                      <span className="text-xs text-muted">already returned</span>
+                    )}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
 
       {returnFormOpen && (
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3">
@@ -222,8 +222,7 @@ function SaleDetail({
             </div>
             <div className="flex flex-col gap-1.5 sm:w-64">
               <label className="text-sm">Refund</label>
-              <select
-                className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+              <Select
                 value={returnMethod}
                 onChange={(e) => setReturnMethod(e.target.value as SaleReturnRefundMethod)}
               >
@@ -232,7 +231,7 @@ function SaleDetail({
                     {label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <Button
               loading={returnMutation.isPending}
@@ -258,7 +257,7 @@ function SaleDetail({
                   {formatDateTime(ret.createdAt)} · {ret.reason}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{formatCentsToBRL(ret.totalRefundedCents)}</span>
+                  <span className="font-medium tabular-nums">{formatCentsToBRL(ret.totalRefundedCents)}</span>
                   <Badge variant={RETURN_STATUS_BADGE[ret.status].variant}>{RETURN_STATUS_BADGE[ret.status].label}</Badge>
                 </div>
               </div>
@@ -321,82 +320,81 @@ export default function VendasPage() {
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Sales</h1>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        {!salesQuery.data ? (
+      {!salesQuery.data ? (
+        <div className="rounded-lg border border-border">
           <SkeletonRows rows={5} cols={5} />
-        ) : salesQuery.data.length === 0 ? (
+        </div>
+      ) : salesQuery.data.length === 0 ? (
+        <div className="rounded-lg border border-border">
           <EmptyState icon={Receipt} message="No sales recorded yet." />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-              <tr>
-                <th className="px-4 py-2 font-medium">Date</th>
-                <th className="px-4 py-2 font-medium">Store</th>
-                <th className="px-4 py-2 font-medium">Customer</th>
-                <th className="px-4 py-2 font-medium">Total</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {salesQuery.data.map((sale) => {
-                const isExpanded = expandedId === sale.id;
-                return (
-                  <Fragment key={sale.id}>
-                    <tr
-                      className="cursor-pointer border-t border-border hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-                      onClick={() => setExpandedId(isExpanded ? null : sale.id)}
-                    >
-                      <td className="px-4 py-2">{formatDateTime(sale.createdAt)}</td>
-                      <td className="px-4 py-2">{storeName(sale.storeId)}</td>
-                      <td className="px-4 py-2">{customerName(sale.customerId)}</td>
-                      <td className="px-4 py-2 font-medium">{formatCentsToBRL(sale.totalCents)}</td>
-                      <td className="px-4 py-2">
-                        {sale.status === 'completed' ? (
-                          <Badge variant="success">Completed</Badge>
-                        ) : (
-                          <Badge variant="danger">Canceled</Badge>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        <ChevronDown
-                          className={`ml-auto h-4 w-4 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                        />
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Date</TableHead>
+              <TableHead>Store</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead></TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {salesQuery.data.map((sale) => {
+              const isExpanded = expandedId === sale.id;
+              return (
+                <Fragment key={sale.id}>
+                  <TableRow className="cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : sale.id)}>
+                    <TableCell>{formatDateTime(sale.createdAt)}</TableCell>
+                    <TableCell>{storeName(sale.storeId)}</TableCell>
+                    <TableCell>{customerName(sale.customerId)}</TableCell>
+                    <TableCell numeric className="font-medium">{formatCentsToBRL(sale.totalCents)}</TableCell>
+                    <TableCell>
+                      {sale.status === 'completed' ? (
+                        <Badge variant="success">Completed</Badge>
+                      ) : (
+                        <Badge variant="danger">Canceled</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <ChevronDown
+                        className={`ml-auto h-4 w-4 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                      />
+                    </TableCell>
+                  </TableRow>
+                  {isExpanded && (
+                    <tr>
+                      <td colSpan={6} className="p-0">
+                        <AnimatePresence>
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                          >
+                            {!detailQuery.data ? (
+                              <SkeletonRows rows={2} cols={4} />
+                            ) : (
+                              <SaleDetail
+                                sale={detailQuery.data}
+                                storeName={
+                                  storesQuery.data?.find((store) => store.id === sale.storeId)
+                                    ?.name
+                                }
+                                companyName={meQuery.data?.tenant.companyName ?? ''}
+                              />
+                            )}
+                          </motion.div>
+                        </AnimatePresence>
                       </td>
                     </tr>
-                    {isExpanded && (
-                      <tr>
-                        <td colSpan={6} className="p-0">
-                          <AnimatePresence>
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                            >
-                              {!detailQuery.data ? (
-                                <SkeletonRows rows={2} cols={4} />
-                              ) : (
-                                <SaleDetail
-                                  sale={detailQuery.data}
-                                  storeName={
-                                    storesQuery.data?.find((store) => store.id === sale.storeId)
-                                      ?.name
-                                  }
-                                  companyName={meQuery.data?.tenant.companyName ?? ''}
-                                />
-                              )}
-                            </motion.div>
-                          </AnimatePresence>
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  )}
+                </Fragment>
+              );
+            })}
+          </TableBody>
+        </Table>
+      )}
     </>
   );
 }

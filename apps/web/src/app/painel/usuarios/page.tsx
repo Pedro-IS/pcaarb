@@ -24,10 +24,12 @@ import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ROLE_LABELS } from '@/lib/role-labels';
 import { PERMISSION_ACTION_LABELS, PERMISSION_SUBJECT_LABELS } from '@/lib/permission-labels';
 
@@ -96,7 +98,7 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
                 {PERMISSION_ACTION_LABELS[override.action]} · {PERMISSION_SUBJECT_LABELS[override.subject]}
                 <button
                   type="button"
-                  className="text-muted hover:text-red-600"
+                  className="text-muted hover:text-danger"
                   disabled={removeMutation.isPending}
                   onClick={() => removeMutation.mutate(override.id)}
                   aria-label="Remove"
@@ -112,42 +114,30 @@ function PermissionOverridesPanel({ userId }: { userId: string }) {
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs">Module</label>
-          <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-sm"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value as PermissionSubject)}
-          >
+          <Select value={subject} onChange={(e) => setSubject(e.target.value as PermissionSubject)}>
             {permissionSubjectSchema.options.map((option) => (
               <option key={option} value={option}>
                 {PERMISSION_SUBJECT_LABELS[option]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs">Action</label>
-          <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-sm"
-            value={action}
-            onChange={(e) => setAction(e.target.value as PermissionAction)}
-          >
+          <Select value={action} onChange={(e) => setAction(e.target.value as PermissionAction)}>
             {permissionActionSchema.options.map((option) => (
               <option key={option} value={option}>
                 {PERMISSION_ACTION_LABELS[option]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs">Effect</label>
-          <select
-            className="h-9 rounded-md border border-border bg-card px-2 text-sm"
-            value={effect}
-            onChange={(e) => setEffect(e.target.value as 'allow' | 'deny')}
-          >
+          <Select value={effect} onChange={(e) => setEffect(e.target.value as 'allow' | 'deny')}>
             <option value="allow">Grant</option>
             <option value="deny">Revoke</option>
-          </select>
+          </Select>
         </div>
         <Button
           type="button"
@@ -259,20 +249,20 @@ export default function UsuariosPage() {
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Email</label>
             <Input type="email" {...register('email')} />
-            {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
+            {errors.email && <p className="text-sm text-danger">{errors.email.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Role</label>
-            <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('role')}>
+            <Select {...register('role')}>
               {Object.entries(ROLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
         <Button type="submit" loading={inviteMutation.isPending} className="self-start">
           Send invite
         </Button>
@@ -290,135 +280,136 @@ export default function UsuariosPage() {
               <Mail className="h-3.5 w-3.5" />
               Pending invites
             </h2>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-sm">
-                <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                  <tr>
-                    <th className="px-4 py-2 font-medium">Email</th>
-                    <th className="px-4 py-2 font-medium">Role</th>
-                    <th className="px-4 py-2 font-medium">Expires</th>
-                    <th className="px-4 py-2 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AnimatePresence initial={false}>
-                    {invitesQuery.data.map((invite) => (
-                      <motion.tr
-                        key={invite.id}
-                        layout
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="border-t border-border"
-                      >
-                        <td className="px-4 py-2">{invite.email}</td>
-                        <td className="px-4 py-2">{ROLE_LABELS[invite.role]}</td>
-                        <td className="px-4 py-2">{new Date(invite.expiresAt).toLocaleDateString('pt-BR')}</td>
-                        <td className="px-4 py-2 text-right">
-                          <button
-                            type="button"
-                            className="text-xs text-red-600 hover:underline"
-                            disabled={revokeMutation.isPending}
-                            onClick={() => revokeMutation.mutate(invite.id)}
-                          >
-                            Revoke
-                          </button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <tr>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Expires</TableHead>
+                  <TableHead></TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence initial={false}>
+                  {invitesQuery.data.map((invite) => (
+                    <motion.tr
+                      key={invite.id}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="border-t border-border transition-colors hover:bg-card-hover/60"
+                    >
+                      <TableCell>{invite.email}</TableCell>
+                      <TableCell>{ROLE_LABELS[invite.role]}</TableCell>
+                      <TableCell>{new Date(invite.expiresAt).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell className="text-right">
+                        <button
+                          type="button"
+                          className="text-xs text-danger hover:underline"
+                          disabled={revokeMutation.isPending}
+                          onClick={() => revokeMutation.mutate(invite.id)}
+                        >
+                          Revoke
+                        </button>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted">{usersQuery.data ? `${usersQuery.data.length} user(s)` : ''}</h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!usersQuery.data ? (
+        {!usersQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={3} cols={5} />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Name</th>
-                  <th className="px-4 py-2 font-medium">Email</th>
-                  <th className="px-4 py-2 font-medium">Role</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {usersQuery.data.map((user) => (
-                  <Fragment key={user.id}>
-                    <tr className="border-t border-border">
-                      <td className="px-4 py-2">{user.name}</td>
-                      <td className="px-4 py-2">{user.email}</td>
-                      <td className="px-4 py-2">
-                        <select
-                          className="h-9 rounded-md border border-border bg-card px-2 text-sm"
-                          value={user.role}
-                          disabled={roleMutation.isPending}
-                          onChange={(event) => roleMutation.mutate({ id: user.id, role: event.target.value as Role })}
-                        >
-                          {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-4 py-2">
-                        <Badge variant={user.active ? 'success' : 'neutral'}>{user.active ? 'Active' : 'Inactive'}</Badge>
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        <div className="flex justify-end gap-3">
-                          {user.role !== 'owner' && (
-                            <button
-                              type="button"
-                              className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                              onClick={() => setExpandedUserId(expandedUserId === user.id ? null : user.id)}
-                            >
-                              <KeyRound className="h-3.5 w-3.5" />
-                              Permissions
-                            </button>
-                          )}
-                          {user.active && user.id !== meQuery.data?.user.id && (
-                            <button
-                              type="button"
-                              className="text-xs text-red-600 hover:underline"
-                              disabled={deactivateMutation.isPending}
-                              onClick={() => deactivateMutation.mutate(user.id)}
-                            >
-                              Deactivate
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                    <AnimatePresence initial={false}>
-                      {expandedUserId === user.id && (
-                        <motion.tr
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="border-t border-border bg-zinc-50 dark:bg-zinc-900"
-                        >
-                          <td className="px-4 py-3" colSpan={5}>
-                            <PermissionOverridesPanel userId={user.id} />
-                          </td>
-                        </motion.tr>
-                      )}
-                    </AnimatePresence>
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {usersQuery.data?.length === 0 && <EmptyState icon={Users} message="No users registered yet." />}
-        </div>
+          </div>
+        ) : usersQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
+            <EmptyState icon={Users} message="No users registered yet." />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {usersQuery.data.map((user) => (
+                <Fragment key={user.id}>
+                  <TableRow>
+                    <TableCell>{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Select
+                        className="h-9"
+                        value={user.role}
+                        disabled={roleMutation.isPending}
+                        onChange={(event) => roleMutation.mutate({ id: user.id, role: event.target.value as Role })}
+                      >
+                        {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={user.active ? 'success' : 'neutral'}>{user.active ? 'Active' : 'Inactive'}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-3">
+                        {user.role !== 'owner' && (
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                            onClick={() => setExpandedUserId(expandedUserId === user.id ? null : user.id)}
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                            Permissions
+                          </button>
+                        )}
+                        {user.active && user.id !== meQuery.data?.user.id && (
+                          <button
+                            type="button"
+                            className="text-xs text-danger hover:underline"
+                            disabled={deactivateMutation.isPending}
+                            onClick={() => deactivateMutation.mutate(user.id)}
+                          >
+                            Deactivate
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                  <AnimatePresence initial={false}>
+                    {expandedUserId === user.id && (
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="border-t border-border bg-card-hover"
+                      >
+                        <td className="px-4 py-3" colSpan={5}>
+                          <PermissionOverridesPanel userId={user.id} />
+                        </td>
+                      </motion.tr>
+                    )}
+                  </AnimatePresence>
+                </Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

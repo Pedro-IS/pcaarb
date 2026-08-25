@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/card';
 import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const PLAN_ORDER: SubscribablePlan[] = ['starter', 'profissional', 'multi_loja'];
 
@@ -136,8 +137,8 @@ export default function AssinaturaPage() {
       )}
 
       {blocked && (
-        <Card className="flex items-center gap-3 border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40">
-          <XCircle className="h-5 w-5 text-red-600" />
+        <Card className="flex items-center gap-3 border-danger/40 bg-danger-soft">
+          <XCircle className="h-5 w-5 text-danger" />
           <p className="text-sm">
             Access blocked for non-payment. Pick a plan below — you will be charged immediately and access returns as
             soon as it is approved.
@@ -215,38 +216,40 @@ export default function AssinaturaPage() {
           <FileText className="h-3.5 w-3.5" />
           Invoice history
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!invoicesQuery.data ? (
+        {!invoicesQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={2} cols={3} />
-          ) : invoicesQuery.data.length === 0 ? (
+          </div>
+        ) : invoicesQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={FileText} message="No invoices yet." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Period</th>
-                  <th className="px-4 py-2 font-medium">Amount</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoicesQuery.data.map((invoice) => (
-                  <tr key={invoice.id} className="border-t border-border">
-                    <td className="px-4 py-2">
-                      {new Date(invoice.periodStart).toLocaleDateString('pt-BR')} – {new Date(invoice.periodEnd).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="px-4 py-2">{formatCentsToBRL(invoice.amountCents)}</td>
-                    <td className="px-4 py-2">
-                      <Badge variant={invoice.status === 'paid' ? 'success' : 'danger'}>
-                        {invoice.status === 'paid' ? 'Paid' : 'Failed'}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Period</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {invoicesQuery.data.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell>
+                    {new Date(invoice.periodStart).toLocaleDateString('pt-BR')} – {new Date(invoice.periodEnd).toLocaleDateString('pt-BR')}
+                  </TableCell>
+                  <TableCell numeric>{formatCentsToBRL(invoice.amountCents)}</TableCell>
+                  <TableCell>
+                    <Badge variant={invoice.status === 'paid' ? 'success' : 'danger'}>
+                      {invoice.status === 'paid' ? 'Paid' : 'Failed'}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

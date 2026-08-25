@@ -11,10 +11,12 @@ import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 // Basis points <-> displayed percentage: 500 bps = 5%. Conversion happens only
 // at the UI edge — the API and the database always work in bps (integer), never in float.
@@ -177,60 +179,58 @@ function SellerRates() {
         Individual rates per seller
       </h2>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        {!ratesQuery.data ? (
+      {!ratesQuery.data ? (
+        <div className="rounded-lg border border-border">
           <SkeletonRows rows={2} cols={2} />
-        ) : ratesQuery.data.length === 0 ? (
+        </div>
+      ) : ratesQuery.data.length === 0 ? (
+        <div className="rounded-lg border border-border">
           <EmptyState icon={Percent} message="No individual rates — everyone uses the default rate." />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-              <tr>
-                <th className="px-4 py-2 font-medium">Seller</th>
-                <th className="px-4 py-2 font-medium">Rate</th>
-                {canEdit && <th className="px-4 py-2 font-medium"></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {ratesQuery.data.map((rate) => (
-                <tr key={rate.id} className="border-t border-border">
-                  <td className="px-4 py-2">{rate.sellerName}</td>
-                  <td className="px-4 py-2">{bpsToPercentText(rate.rateBps)}%</td>
-                  {canEdit && (
-                    <td className="px-4 py-2 text-right">
-                      <button
-                        type="button"
-                        className="text-xs text-red-600 hover:underline"
-                        disabled={removeMutation.isPending}
-                        onClick={() => removeMutation.mutate(rate.userId)}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Seller</TableHead>
+              <TableHead>Rate</TableHead>
+              {canEdit && <TableHead></TableHead>}
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {ratesQuery.data.map((rate) => (
+              <TableRow key={rate.id}>
+                <TableCell>{rate.sellerName}</TableCell>
+                <TableCell numeric>{bpsToPercentText(rate.rateBps)}%</TableCell>
+                {canEdit && (
+                  <TableCell className="text-right">
+                    <button
+                      type="button"
+                      className="text-xs text-danger hover:underline"
+                      disabled={removeMutation.isPending}
+                      onClick={() => removeMutation.mutate(rate.userId)}
+                    >
+                      Remove
+                    </button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       {canEdit && (
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs">Seller</label>
-            <select
-              className="h-9 rounded-md border border-border bg-card px-2 text-sm"
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-            >
+            <Select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
               <option value="">Select...</option>
               {availableUsers.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs">Rate (%)</label>
@@ -297,36 +297,38 @@ function CommissionReportSection() {
         </p>
       </Card>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        {!reportQuery.data ? (
+      {!reportQuery.data ? (
+        <div className="rounded-lg border border-border">
           <SkeletonRows rows={2} cols={4} />
-        ) : reportQuery.data.porVendedor.length === 0 ? (
+        </div>
+      ) : reportQuery.data.porVendedor.length === 0 ? (
+        <div className="rounded-lg border border-border">
           <EmptyState icon={Trophy} message="No sales in this period." />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-              <tr>
-                <th className="px-4 py-2 font-medium">Seller</th>
-                <th className="px-4 py-2 font-medium">Sales</th>
-                <th className="px-4 py-2 font-medium">Revenue</th>
-                <th className="px-4 py-2 font-medium">Rate</th>
-                <th className="px-4 py-2 font-medium">Commission</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportQuery.data.porVendedor.map((item) => (
-                <tr key={item.sellerId} className="border-t border-border">
-                  <td className="px-4 py-2">{item.sellerName}</td>
-                  <td className="px-4 py-2">{item.totalSales}</td>
-                  <td className="px-4 py-2">{formatCentsToBRL(item.revenueCents)}</td>
-                  <td className="px-4 py-2 text-muted">{bpsToPercentText(item.rateBps)}%</td>
-                  <td className="px-4 py-2 font-medium">{formatCentsToBRL(item.commissionCents)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Seller</TableHead>
+              <TableHead>Sales</TableHead>
+              <TableHead>Revenue</TableHead>
+              <TableHead>Rate</TableHead>
+              <TableHead>Commission</TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {reportQuery.data.porVendedor.map((item) => (
+              <TableRow key={item.sellerId}>
+                <TableCell>{item.sellerName}</TableCell>
+                <TableCell numeric>{item.totalSales}</TableCell>
+                <TableCell numeric>{formatCentsToBRL(item.revenueCents)}</TableCell>
+                <TableCell numeric className="text-muted">{bpsToPercentText(item.rateBps)}%</TableCell>
+                <TableCell numeric className="font-medium">{formatCentsToBRL(item.commissionCents)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }

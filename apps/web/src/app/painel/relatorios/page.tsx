@@ -22,6 +22,7 @@ import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const ABC_BADGE_VARIANT: Record<AbcCurveItem['class'], BadgeVariant> = {
   A: 'success',
@@ -155,21 +156,21 @@ export default function RelatoriosPage() {
             <Receipt className="h-3.5 w-3.5" />
             Sales in period
           </div>
-          <p className="text-lg font-semibold">{summary ? summary.totalSales : '—'}</p>
+          <p className="text-lg font-semibold tabular-nums">{summary ? summary.totalSales : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <Wallet className="h-3.5 w-3.5" />
             Revenue
           </div>
-          <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.totalRevenueCents) : '—'}</p>
+          <p className="text-lg font-semibold tabular-nums">{summary ? formatCentsToBRL(summary.totalRevenueCents) : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <BarChart3 className="h-3.5 w-3.5" />
             Average ticket
           </div>
-          <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.averageTicketCents) : '—'}</p>
+          <p className="text-lg font-semibold tabular-nums">{summary ? formatCentsToBRL(summary.averageTicketCents) : '—'}</p>
         </Card>
       </div>
 
@@ -178,32 +179,34 @@ export default function RelatoriosPage() {
           <Trophy className="h-3.5 w-3.5" />
           Seller ranking
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!sellersQuery.data ? (
+        {!sellersQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={2} cols={3} />
-          ) : sellersQuery.data.length === 0 ? (
+          </div>
+        ) : sellersQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={Trophy} message="No sales in this period." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Seller</th>
-                  <th className="px-4 py-2 font-medium">Sales</th>
-                  <th className="px-4 py-2 font-medium">Revenue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sellersQuery.data.map((seller) => (
-                  <tr key={seller.sellerId} className="border-t border-border">
-                    <td className="px-4 py-2">{seller.sellerName}</td>
-                    <td className="px-4 py-2">{seller.totalSales}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(seller.revenueCents)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Seller</TableHead>
+                <TableHead>Sales</TableHead>
+                <TableHead>Revenue</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {sellersQuery.data.map((seller) => (
+                <TableRow key={seller.sellerId}>
+                  <TableCell>{seller.sellerName}</TableCell>
+                  <TableCell numeric>{seller.totalSales}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(seller.revenueCents)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -211,32 +214,34 @@ export default function RelatoriosPage() {
           <Store className="h-3.5 w-3.5" />
           Consolidated view by store
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!storesQuery.data ? (
+        {!storesQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={2} cols={3} />
-          ) : storesQuery.data.length === 0 ? (
+          </div>
+        ) : storesQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={Store} message="No sales in this period." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Store</th>
-                  <th className="px-4 py-2 font-medium">Sales</th>
-                  <th className="px-4 py-2 font-medium">Revenue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {storesQuery.data.map((store) => (
-                  <tr key={store.storeId} className="border-t border-border">
-                    <td className="px-4 py-2">{store.storeName}</td>
-                    <td className="px-4 py-2">{store.totalSales}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(store.revenueCents)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Store</TableHead>
+                <TableHead>Sales</TableHead>
+                <TableHead>Revenue</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {storesQuery.data.map((store) => (
+                <TableRow key={store.storeId}>
+                  <TableCell>{store.storeName}</TableCell>
+                  <TableCell numeric>{store.totalSales}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(store.revenueCents)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -245,38 +250,40 @@ export default function RelatoriosPage() {
           Class A covers up to 80% of cumulative revenue, B up to 95%, C the rest — helps identify the products that
           drive most of the revenue.
         </p>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!abcQuery.data ? (
+        {!abcQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={4} cols={5} />
-          ) : abcQuery.data.length === 0 ? (
+          </div>
+        ) : abcQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={BarChart3} message="No sales in this period." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Product</th>
-                  <th className="px-4 py-2 font-medium">Qty. sold</th>
-                  <th className="px-4 py-2 font-medium">Revenue</th>
-                  <th className="px-4 py-2 font-medium">% of revenue</th>
-                  <th className="px-4 py-2 font-medium">Class</th>
-                </tr>
-              </thead>
-              <tbody>
-                {abcQuery.data.map((item) => (
-                  <tr key={item.productId} className="border-t border-border">
-                    <td className="px-4 py-2">{item.productName}</td>
-                    <td className="px-4 py-2">{item.quantitySold}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(item.revenueCents)}</td>
-                    <td className="px-4 py-2 text-muted">{item.revenueSharePercent.toFixed(1)}%</td>
-                    <td className="px-4 py-2">
-                      <Badge variant={ABC_BADGE_VARIANT[item.class]}>{item.class}</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Product</TableHead>
+                <TableHead>Qty. sold</TableHead>
+                <TableHead>Revenue</TableHead>
+                <TableHead>% of revenue</TableHead>
+                <TableHead>Class</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {abcQuery.data.map((item) => (
+                <TableRow key={item.productId}>
+                  <TableCell>{item.productName}</TableCell>
+                  <TableCell numeric>{item.quantitySold}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(item.revenueCents)}</TableCell>
+                  <TableCell numeric className="text-muted">{item.revenueSharePercent.toFixed(1)}%</TableCell>
+                  <TableCell>
+                    <Badge variant={ABC_BADGE_VARIANT[item.class]}>{item.class}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -289,49 +296,51 @@ export default function RelatoriosPage() {
           seasonality, it is a linear projection over what has already been sold. Products with no sales history and
           healthy stock do not show up here.
         </p>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!reorderQuery.data ? (
+        {!reorderQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={3} cols={5} />
-          ) : reorderQuery.data.length === 0 ? (
+          </div>
+        ) : reorderQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={PackageSearch} message="No product needs attention right now." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Product</th>
-                  <th className="px-4 py-2 font-medium">Stock</th>
-                  <th className="px-4 py-2 font-medium">Sales/day (avg.)</th>
-                  <th className="px-4 py-2 font-medium">Stockout forecast</th>
-                  <th className="px-4 py-2 font-medium">Suggested order</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reorderQuery.data.map((item) => (
-                  <tr key={item.productId} className="border-t border-border">
-                    <td className="px-4 py-2">{item.productName}</td>
-                    <td className="px-4 py-2">{item.stockQuantity}</td>
-                    <td className="px-4 py-2 text-muted">{item.avgDailySales.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-muted">
-                      {item.daysUntilStockout === null ? '—' : `${item.daysUntilStockout} day(s)`}
-                    </td>
-                    <td className="px-4 py-2">{item.suggestedReorderQty > 0 ? item.suggestedReorderQty : '—'}</td>
-                    <td className="px-4 py-2">
-                      {item.needsAttention ? (
-                        <Badge variant="danger">
-                          <AlertTriangle className="mr-1 inline h-3 w-3" />
-                          Attention
-                        </Badge>
-                      ) : (
-                        <Badge variant="success">OK</Badge>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Product</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Sales/day (avg.)</TableHead>
+                <TableHead>Stockout forecast</TableHead>
+                <TableHead>Suggested order</TableHead>
+                <TableHead>Status</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {reorderQuery.data.map((item) => (
+                <TableRow key={item.productId}>
+                  <TableCell>{item.productName}</TableCell>
+                  <TableCell numeric>{item.stockQuantity}</TableCell>
+                  <TableCell numeric className="text-muted">{item.avgDailySales.toFixed(2)}</TableCell>
+                  <TableCell numeric className="text-muted">
+                    {item.daysUntilStockout === null ? '—' : `${item.daysUntilStockout} day(s)`}
+                  </TableCell>
+                  <TableCell numeric>{item.suggestedReorderQty > 0 ? item.suggestedReorderQty : '—'}</TableCell>
+                  <TableCell>
+                    {item.needsAttention ? (
+                      <Badge variant="danger">
+                        <AlertTriangle className="mr-1 inline h-3 w-3" />
+                        Attention
+                      </Badge>
+                    ) : (
+                      <Badge variant="success">OK</Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -355,44 +364,46 @@ export default function RelatoriosPage() {
           />
           <span className="text-sm text-muted">%</span>
         </div>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!pricingQuery.data ? (
+        {!pricingQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={3} cols={5} />
-          ) : pricingQuery.data.length === 0 ? (
+          </div>
+        ) : pricingQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={Tag} message="No active product with a registered cost." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Product</th>
-                  <th className="px-4 py-2 font-medium">Current price</th>
-                  <th className="px-4 py-2 font-medium">Cost</th>
-                  <th className="px-4 py-2 font-medium">Current margin</th>
-                  <th className="px-4 py-2 font-medium">Suggested price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pricingQuery.data.map((item) => (
-                  <tr key={item.productId} className="border-t border-border">
-                    <td className="px-4 py-2">{item.productName}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(item.priceCents)}</td>
-                    <td className="px-4 py-2 text-muted">{formatCentsToBRL(item.costPriceCents)}</td>
-                    <td className="px-4 py-2">
-                      {item.belowCost ? (
-                        <Badge variant="danger">{item.currentMarginPercent.toFixed(1)}% (below cost)</Badge>
-                      ) : (
-                        <span className={item.currentMarginPercent < 15 ? 'text-amber-600' : ''}>
-                          {item.currentMarginPercent.toFixed(1)}%
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">{formatCentsToBRL(item.suggestedPriceCents)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Product</TableHead>
+                <TableHead>Current price</TableHead>
+                <TableHead>Cost</TableHead>
+                <TableHead>Current margin</TableHead>
+                <TableHead>Suggested price</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {pricingQuery.data.map((item) => (
+                <TableRow key={item.productId}>
+                  <TableCell>{item.productName}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(item.priceCents)}</TableCell>
+                  <TableCell numeric className="text-muted">{formatCentsToBRL(item.costPriceCents)}</TableCell>
+                  <TableCell numeric>
+                    {item.belowCost ? (
+                      <Badge variant="danger">{item.currentMarginPercent.toFixed(1)}% (below cost)</Badge>
+                    ) : (
+                      <span className={item.currentMarginPercent < 15 ? 'text-warning' : ''}>
+                        {item.currentMarginPercent.toFixed(1)}%
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell numeric>{formatCentsToBRL(item.suggestedPriceCents)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -407,50 +418,52 @@ export default function RelatoriosPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card className="flex flex-col gap-1">
             <p className="text-xs text-muted">Revenue realized</p>
-            <p className="text-lg font-semibold text-green-600">{dre ? formatCentsToBRL(dre.receitasCents) : '—'}</p>
+            <p className="text-lg font-semibold tabular-nums text-success">{dre ? formatCentsToBRL(dre.receitasCents) : '—'}</p>
           </Card>
           <Card className="flex flex-col gap-1">
             <p className="text-xs text-muted">Expenses realized</p>
-            <p className="text-lg font-semibold text-red-600">{dre ? formatCentsToBRL(dre.despesasCents) : '—'}</p>
+            <p className="text-lg font-semibold tabular-nums text-danger">{dre ? formatCentsToBRL(dre.despesasCents) : '—'}</p>
           </Card>
           <Card className="flex flex-col gap-1">
             <p className="text-xs text-muted">Result</p>
-            <p className={`text-lg font-semibold ${dre && dre.resultadoCents < 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <p className={`text-lg font-semibold tabular-nums ${dre && dre.resultadoCents < 0 ? 'text-danger' : 'text-success'}`}>
               {dre ? formatCentsToBRL(dre.resultadoCents) : '—'}
             </p>
           </Card>
         </div>
 
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!dre ? (
+        {!dre ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={3} cols={4} />
-          ) : dre.porCentroDeCusto.length === 0 ? (
+          </div>
+        ) : dre.porCentroDeCusto.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={Landmark} message="No entries paid in this period." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Cost center</th>
-                  <th className="px-4 py-2 font-medium">Revenue</th>
-                  <th className="px-4 py-2 font-medium">Expenses</th>
-                  <th className="px-4 py-2 font-medium">Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dre.porCentroDeCusto.map((bucket) => (
-                  <tr key={bucket.costCenterId ?? 'sem-centro-de-custo'} className="border-t border-border">
-                    <td className="px-4 py-2">{bucket.costCenterName}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(bucket.receitasCents)}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(bucket.despesasCents)}</td>
-                    <td className={`px-4 py-2 ${bucket.resultadoCents < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {formatCentsToBRL(bucket.resultadoCents)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Cost center</TableHead>
+                <TableHead>Revenue</TableHead>
+                <TableHead>Expenses</TableHead>
+                <TableHead>Result</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {dre.porCentroDeCusto.map((bucket) => (
+                <TableRow key={bucket.costCenterId ?? 'sem-centro-de-custo'}>
+                  <TableCell>{bucket.costCenterName}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(bucket.receitasCents)}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(bucket.despesasCents)}</TableCell>
+                  <TableCell numeric className={bucket.resultadoCents < 0 ? 'text-danger' : 'text-success'}>
+                    {formatCentsToBRL(bucket.resultadoCents)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

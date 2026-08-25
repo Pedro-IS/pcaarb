@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableHead, TableCell } from '@/components/ui/table';
 
 type Resource = 'customers' | 'suppliers';
 
@@ -143,12 +144,12 @@ function PartySection({ resource }: { resource: Resource }) {
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Name</label>
             <Input {...register('name')} />
-            {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+            {errors.name && <p className="text-sm text-danger">{errors.name.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">CPF/CNPJ</label>
             <Input placeholder="Numbers only" {...register('document')} />
-            {errors.document && <p className="text-sm text-red-600">{errors.document.message}</p>}
+            {errors.document && <p className="text-sm text-danger">{errors.document.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Phone</label>
@@ -157,10 +158,10 @@ function PartySection({ resource }: { resource: Resource }) {
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Email</label>
             <Input type="email" {...register('email')} />
-            {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
+            {errors.email && <p className="text-sm text-danger">{errors.email.message}</p>}
           </div>
         </div>
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
         <Button type="submit" loading={createMutation.isPending} className="self-start">
           Add {config.singular}
         </Button>
@@ -170,74 +171,76 @@ function PartySection({ resource }: { resource: Resource }) {
         <h2 className="text-sm font-medium text-muted">
           {listQuery.data ? `${listQuery.data.length} ${config.label.toLowerCase()}` : ''}
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!listQuery.data ? (
+        {!listQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={4} cols={4} />
-          ) : listQuery.data.length === 0 ? (
+          </div>
+        ) : listQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={config.icon} message={config.emptyMessage} />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Name</th>
-                  <th className="px-4 py-2 font-medium">CPF/CNPJ</th>
-                  <th className="px-4 py-2 font-medium">Contact</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <AnimatePresence initial={false}>
-                  {listQuery.data.map((party) => (
-                    <motion.tr
-                      key={party.id}
-                      layout
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="border-t border-border"
-                    >
-                      <td className="px-4 py-2">{party.name}</td>
-                      <td className="px-4 py-2 text-muted">{party.document ?? '—'}</td>
-                      <td className="px-4 py-2 text-muted">{party.email ?? party.phone ?? '—'}</td>
-                      <td className="px-4 py-2 text-right">
-                        <div className="flex justify-end gap-3">
-                          {canManagePrivacy && (
-                            <>
-                              <button
-                                type="button"
-                                className="text-xs text-accent hover:underline"
-                                disabled={exportDataMutation.isPending}
-                                onClick={() => exportDataMutation.mutate(party.id)}
-                              >
-                                Export data
-                              </button>
-                              <button
-                                type="button"
-                                className="text-xs text-amber-700 hover:underline dark:text-amber-500"
-                                disabled={anonymizeMutation.isPending}
-                                onClick={() => anonymizeMutation.mutate(party.id)}
-                              >
-                                Anonymize
-                              </button>
-                            </>
-                          )}
-                          <button
-                            type="button"
-                            className="text-xs text-red-600 hover:underline"
-                            disabled={removeMutation.isPending}
-                            onClick={() => removeMutation.mutate(party.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Name</TableHead>
+                <TableHead>CPF/CNPJ</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              <AnimatePresence initial={false}>
+                {listQuery.data.map((party) => (
+                  <motion.tr
+                    key={party.id}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="border-t border-border transition-colors hover:bg-card-hover/60"
+                  >
+                    <TableCell>{party.name}</TableCell>
+                    <TableCell className="text-muted">{party.document ?? '—'}</TableCell>
+                    <TableCell className="text-muted">{party.email ?? party.phone ?? '—'}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-3">
+                        {canManagePrivacy && (
+                          <>
+                            <button
+                              type="button"
+                              className="text-xs text-accent hover:underline"
+                              disabled={exportDataMutation.isPending}
+                              onClick={() => exportDataMutation.mutate(party.id)}
+                            >
+                              Export data
+                            </button>
+                            <button
+                              type="button"
+                              className="text-xs text-warning hover:underline"
+                              disabled={anonymizeMutation.isPending}
+                              onClick={() => anonymizeMutation.mutate(party.id)}
+                            >
+                              Anonymize
+                            </button>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          className="text-xs text-danger hover:underline"
+                          disabled={removeMutation.isPending}
+                          onClick={() => removeMutation.mutate(party.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </TableCell>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+            </TableBody>
+          </Table>
+        )}
       </div>
     </div>
   );
@@ -260,9 +263,7 @@ export default function CadastrosPage() {
               onClick={() => setTab(key)}
               className={cn(
                 'flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors',
-                tab === key
-                  ? 'border-accent text-accent'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50',
+                tab === key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-foreground',
               )}
             >
               <TabIcon className="h-4 w-4" />

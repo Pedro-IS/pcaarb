@@ -25,10 +25,12 @@ import { useCurrentUser } from '@/lib/use-current-user';
 import { ROLE_LABELS } from '@/lib/role-labels';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const API_KEY_ROLES: Role[] = ['owner', 'admin', 'financeiro', 'operador_caixa'];
 
@@ -356,55 +358,57 @@ export default function IntegracoesPage() {
         </Button>
       </Card>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        {!channelsQuery.data ? (
+      {!channelsQuery.data ? (
+        <div className="rounded-lg border border-border">
           <SkeletonRows rows={2} cols={2} />
-        ) : channelsQuery.data.length === 0 ? (
+        </div>
+      ) : channelsQuery.data.length === 0 ? (
+        <div className="rounded-lg border border-border">
           <EmptyState icon={Plug} message="No integrations connected yet." />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-              <tr>
-                <th className="px-4 py-2 font-medium">Channel</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {channelsQuery.data.map((channel) => (
-                <tr
-                  key={channel.id}
-                  className={`cursor-pointer border-t border-border ${selectedChannelId === channel.id ? 'bg-accent-soft/40' : ''}`}
-                  onClick={() => setSelectedChannelId(channel.id)}
-                >
-                  <td className="px-4 py-2">
-                    <span className="flex items-center gap-1.5">
-                      <Plug className="h-3.5 w-3.5 text-muted" />
-                      {channel.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2">
-                    <Badge variant={channel.active ? 'success' : 'neutral'}>{channel.active ? 'Active' : 'Inactive'}</Badge>
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <button
-                      type="button"
-                      className="text-xs text-accent hover:underline"
-                      disabled={toggleChannelMutation.isPending}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleChannelMutation.mutate({ id: channel.id, active: !channel.active });
-                      }}
-                    >
-                      {channel.active ? 'Deactivate' : 'Reactivate'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Channel</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead></TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {channelsQuery.data.map((channel) => (
+              <TableRow
+                key={channel.id}
+                className={`cursor-pointer ${selectedChannelId === channel.id ? 'bg-accent-soft/40' : ''}`}
+                onClick={() => setSelectedChannelId(channel.id)}
+              >
+                <TableCell>
+                  <span className="flex items-center gap-1.5">
+                    <Plug className="h-3.5 w-3.5 text-muted" />
+                    {channel.name}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={channel.active ? 'success' : 'neutral'}>{channel.active ? 'Active' : 'Inactive'}</Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <button
+                    type="button"
+                    className="text-xs text-accent hover:underline"
+                    disabled={toggleChannelMutation.isPending}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleChannelMutation.mutate({ id: channel.id, active: !channel.active });
+                    }}
+                  >
+                    {channel.active ? 'Deactivate' : 'Reactivate'}
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       {selectedChannel && (
         <>
@@ -415,53 +419,55 @@ export default function IntegracoesPage() {
                 Products — {selectedChannel.name}
               </h2>
             </div>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              {!productsQuery.data || !listingsQuery.data ? (
+            {!productsQuery.data || !listingsQuery.data ? (
+              <div className="rounded-lg border border-border">
                 <SkeletonRows rows={3} cols={4} />
-              ) : productsQuery.data.filter((p) => p.active).length === 0 ? (
+              </div>
+            ) : productsQuery.data.filter((p) => p.active).length === 0 ? (
+              <div className="rounded-lg border border-border">
                 <EmptyState icon={PackageSearch} message="No active products registered yet." />
-              ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                    <tr>
-                      <th className="px-4 py-2 font-medium">Product</th>
-                      <th className="px-4 py-2 font-medium">Price</th>
-                      <th className="px-4 py-2 font-medium">Status</th>
-                      <th className="px-4 py-2 font-medium"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {productsQuery.data
-                      .filter((p) => p.active)
-                      .map((product) => {
-                        const listing = listingByProductId.get(product.id);
-                        const statusInfo = LISTING_STATUS_BADGE[listing?.status ?? 'nao_sincronizado'];
-                        return (
-                          <tr key={product.id} className="border-t border-border">
-                            <td className="px-4 py-2">{product.name}</td>
-                            <td className="px-4 py-2">{formatCentsToBRL(product.priceCents)}</td>
-                            <td className="px-4 py-2">
-                              <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
-                              {listing?.status === 'error' && listing.lastSyncError && (
-                                <p className="mt-1 text-xs text-red-600">{listing.lastSyncError}</p>
-                              )}
-                            </td>
-                            <td className="px-4 py-2 text-right">
-                              <Button
-                                variant="secondary"
-                                loading={syncProductMutation.isPending && syncProductMutation.variables === product.id}
-                                onClick={() => syncProductMutation.mutate(product.id)}
-                              >
-                                {listing ? 'Sync again' : 'Sync'}
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              )}
-            </div>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <tr>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead></TableHead>
+                  </tr>
+                </TableHeader>
+                <TableBody>
+                  {productsQuery.data
+                    .filter((p) => p.active)
+                    .map((product) => {
+                      const listing = listingByProductId.get(product.id);
+                      const statusInfo = LISTING_STATUS_BADGE[listing?.status ?? 'nao_sincronizado'];
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>{product.name}</TableCell>
+                          <TableCell numeric>{formatCentsToBRL(product.priceCents)}</TableCell>
+                          <TableCell>
+                            <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                            {listing?.status === 'error' && listing.lastSyncError && (
+                              <p className="mt-1 text-xs text-danger">{listing.lastSyncError}</p>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="secondary"
+                              loading={syncProductMutation.isPending && syncProductMutation.variables === product.id}
+                              onClick={() => syncProductMutation.mutate(product.id)}
+                            >
+                              {listing ? 'Sync again' : 'Sync'}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            )}
           </Card>
 
           <Card className="flex flex-col gap-4">
@@ -475,50 +481,52 @@ export default function IntegracoesPage() {
                 Fetch new orders
               </Button>
             </div>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              {!ordersQuery.data ? (
+            {!ordersQuery.data ? (
+              <div className="rounded-lg border border-border">
                 <SkeletonRows rows={2} cols={3} />
-              ) : ordersQuery.data.length === 0 ? (
+              </div>
+            ) : ordersQuery.data.length === 0 ? (
+              <div className="rounded-lg border border-border">
                 <EmptyState icon={ShoppingBag} message="No orders imported yet." />
-              ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                    <tr>
-                      <th className="px-4 py-2 font-medium">Order</th>
-                      <th className="px-4 py-2 font-medium">Amount</th>
-                      <th className="px-4 py-2 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ordersQuery.data.map((order) => (
-                      <tr key={order.id} className="border-t border-border">
-                        <td className="px-4 py-2">{order.externalOrderId}</td>
-                        <td className="px-4 py-2">{formatCentsToBRL(order.totalCents)}</td>
-                        <td className="px-4 py-2">
-                          <span className="flex items-center gap-1.5">
-                            <Badge variant={ORDER_STATUS_BADGE[order.status].variant}>{ORDER_STATUS_BADGE[order.status].label}</Badge>
-                            {order.status === 'needs_attention' && (
-                              <span className="inline-flex" title={order.issue ?? undefined}>
-                                <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-                              </span>
-                            )}
-                          </span>
-                          {order.status === 'needs_attention' && order.issue && (
-                            <p className="mt-1 text-xs text-amber-700 dark:text-amber-500">{order.issue}</p>
-                          )}
-                          {order.status === 'imported' && (
-                            <span className="mt-1 flex items-center gap-1 text-xs text-muted">
-                              <CheckCircle2 className="h-3 w-3" />
-                              stock updated
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <tr>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                  </tr>
+                </TableHeader>
+                <TableBody>
+                  {ordersQuery.data.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell>{order.externalOrderId}</TableCell>
+                      <TableCell numeric>{formatCentsToBRL(order.totalCents)}</TableCell>
+                      <TableCell>
+                        <span className="flex items-center gap-1.5">
+                          <Badge variant={ORDER_STATUS_BADGE[order.status].variant}>{ORDER_STATUS_BADGE[order.status].label}</Badge>
+                          {order.status === 'needs_attention' && (
+                            <span className="inline-flex" title={order.issue ?? undefined}>
+                              <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                             </span>
                           )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                        </span>
+                        {order.status === 'needs_attention' && order.issue && (
+                          <p className="mt-1 text-xs text-warning">{order.issue}</p>
+                        )}
+                        {order.status === 'imported' && (
+                          <span className="mt-1 flex items-center gap-1 text-xs text-muted">
+                            <CheckCircle2 className="h-3 w-3" />
+                            stock updated
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </Card>
         </>
       )}
@@ -531,20 +539,20 @@ export default function IntegracoesPage() {
           </h2>
           <p className="text-sm text-muted">
             Generate a key for an external system to consume the PCAARB API directly (interactive documentation at{' '}
-            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">/api/docs</code>). The key acts with
+            <code className="rounded bg-card-hover px-1 py-0.5 text-xs">/api/docs</code>). The key acts with
             the same permissions as the chosen role — the same rules that apply to a logged-in user. Use it server-side
             only — never in code that runs in the end customer&apos;s browser.
           </p>
         </div>
 
         {justCreatedKey && (
-          <Card className="flex flex-col gap-2 border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
-            <p className="flex items-center gap-1.5 text-sm font-medium text-amber-800 dark:text-amber-400">
+          <Card className="flex flex-col gap-2 border-warning/40 bg-warning-soft">
+            <p className="flex items-center gap-1.5 text-sm font-medium text-warning">
               <AlertTriangle className="h-4 w-4" />
               Save this key now — it will not be shown again.
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 overflow-x-auto rounded-md border border-amber-300 bg-white px-3 py-2 text-xs dark:border-amber-800 dark:bg-zinc-950">
+              <code className="flex-1 overflow-x-auto rounded-md border border-warning/40 bg-card px-3 py-2 text-xs">
                 {justCreatedKey.rawKey}
               </code>
               <Button variant="secondary" onClick={() => copyRawKey(justCreatedKey.rawKey)}>
@@ -569,23 +577,18 @@ export default function IntegracoesPage() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Role</label>
-            <select
-              className="h-10 rounded-md border border-border bg-card px-3 text-sm"
-              value={newKeyRole}
-              onChange={(e) => setNewKeyRole(e.target.value as Role)}
-            >
+            <Select value={newKeyRole} onChange={(e) => setNewKeyRole(e.target.value as Role)}>
               {API_KEY_ROLES.map((role) => (
                 <option key={role} value={role}>
                   {ROLE_LABELS[role]}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Expires on (optional)</label>
-            <input
+            <Input
               type="date"
-              className="h-10 rounded-md border border-border bg-card px-3 text-sm"
               value={newKeyExpiresAt}
               onChange={(e) => setNewKeyExpiresAt(e.target.value)}
             />
@@ -595,64 +598,66 @@ export default function IntegracoesPage() {
           </Button>
         </Card>
 
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!apiKeysQuery.data ? (
+        {!apiKeysQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={2} cols={4} />
-          ) : apiKeysQuery.data.length === 0 ? (
+          </div>
+        ) : apiKeysQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={Key} message="No API keys created yet." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Name</th>
-                  <th className="px-4 py-2 font-medium">Key</th>
-                  <th className="px-4 py-2 font-medium">Role</th>
-                  <th className="px-4 py-2 font-medium">Last used</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {apiKeysQuery.data.map((key) => {
-                  const expired = key.expiresAt && new Date(key.expiresAt) < new Date();
-                  return (
-                    <tr key={key.id} className="border-t border-border">
-                      <td className="px-4 py-2">{key.name}</td>
-                      <td className="px-4 py-2">
-                        <code className="text-xs text-muted">{key.keyPrefix}…</code>
-                      </td>
-                      <td className="px-4 py-2">{ROLE_LABELS[key.role]}</td>
-                      <td className="px-4 py-2 text-muted">
-                        {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString('pt-BR') : 'Never used'}
-                      </td>
-                      <td className="px-4 py-2">
-                        {key.revokedAt ? (
-                          <Badge variant="neutral">Revoked</Badge>
-                        ) : expired ? (
-                          <Badge variant="warning">Expired</Badge>
-                        ) : (
-                          <Badge variant="success">Active</Badge>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        {!key.revokedAt && (
-                          <button
-                            type="button"
-                            className="text-xs text-red-600 hover:underline"
-                            disabled={revokeApiKeyMutation.isPending}
-                            onClick={() => revokeApiKeyMutation.mutate(key.id)}
-                          >
-                            Revoke
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Name</TableHead>
+                <TableHead>Key</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Last used</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {apiKeysQuery.data.map((key) => {
+                const expired = key.expiresAt && new Date(key.expiresAt) < new Date();
+                return (
+                  <TableRow key={key.id}>
+                    <TableCell>{key.name}</TableCell>
+                    <TableCell>
+                      <code className="text-xs text-muted">{key.keyPrefix}…</code>
+                    </TableCell>
+                    <TableCell>{ROLE_LABELS[key.role]}</TableCell>
+                    <TableCell className="text-muted">
+                      {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleString('pt-BR') : 'Never used'}
+                    </TableCell>
+                    <TableCell>
+                      {key.revokedAt ? (
+                        <Badge variant="neutral">Revoked</Badge>
+                      ) : expired ? (
+                        <Badge variant="warning">Expired</Badge>
+                      ) : (
+                        <Badge variant="success">Active</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {!key.revokedAt && (
+                        <button
+                          type="button"
+                          className="text-xs text-danger hover:underline"
+                          disabled={revokeApiKeyMutation.isPending}
+                          onClick={() => revokeApiKeyMutation.mutate(key.id)}
+                        >
+                          Revoke
+                        </button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">
@@ -663,7 +668,7 @@ export default function IntegracoesPage() {
           </h2>
           <p className="text-sm text-muted">
             Get a signed HTTP POST whenever an event happens (a sale completes, a return is processed) instead of
-            polling the API. Each request carries an <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-800">X-PCAARB-Signature</code>{' '}
+            polling the API. Each request carries an <code className="rounded bg-card-hover px-1 py-0.5 text-xs">X-PCAARB-Signature</code>{' '}
             header — verify it with the endpoint&apos;s signing secret before trusting the payload.
           </p>
         </div>
@@ -697,80 +702,82 @@ export default function IntegracoesPage() {
           </div>
         </Card>
 
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!webhooksQuery.data ? (
+        {!webhooksQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={2} cols={4} />
-          ) : webhooksQuery.data.length === 0 ? (
+          </div>
+        ) : webhooksQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
             <EmptyState icon={Webhook} message="No webhook endpoints configured yet." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">URL</th>
-                  <th className="px-4 py-2 font-medium">Events</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {webhooksQuery.data.map((endpoint) => (
-                  <tr
-                    key={endpoint.id}
-                    className={`cursor-pointer border-t border-border ${selectedWebhookId === endpoint.id ? 'bg-accent-soft/40' : ''}`}
-                    onClick={() => setSelectedWebhookId(endpoint.id)}
-                  >
-                    <td className="px-4 py-2">
-                      <div className="flex flex-col">
-                        <span className="break-all">{endpoint.url}</span>
-                        {endpoint.description && <span className="text-xs text-muted">{endpoint.description}</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2">
-                      <div className="flex flex-wrap gap-1">
-                        {endpoint.subscribedEvents.map((event) => (
-                          <Badge key={event} variant="neutral">
-                            {event}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2">
-                      <Badge variant={endpoint.active ? 'success' : 'neutral'}>{endpoint.active ? 'Active' : 'Inactive'}</Badge>
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          className="text-xs text-accent hover:underline"
-                          disabled={testWebhookMutation.isPending}
-                          onClick={() => testWebhookMutation.mutate(endpoint.id)}
-                        >
-                          Send test
-                        </button>
-                        <button
-                          type="button"
-                          className="text-xs text-accent hover:underline"
-                          disabled={toggleWebhookMutation.isPending}
-                          onClick={() => toggleWebhookMutation.mutate({ id: endpoint.id, active: !endpoint.active })}
-                        >
-                          {endpoint.active ? 'Deactivate' : 'Reactivate'}
-                        </button>
-                        <button
-                          type="button"
-                          className="text-xs text-red-600 hover:underline"
-                          disabled={deleteWebhookMutation.isPending}
-                          onClick={() => deleteWebhookMutation.mutate(endpoint.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>URL</TableHead>
+                <TableHead>Events</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {webhooksQuery.data.map((endpoint) => (
+                <TableRow
+                  key={endpoint.id}
+                  className={`cursor-pointer ${selectedWebhookId === endpoint.id ? 'bg-accent-soft/40' : ''}`}
+                  onClick={() => setSelectedWebhookId(endpoint.id)}
+                >
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="break-all">{endpoint.url}</span>
+                      {endpoint.description && <span className="text-xs text-muted">{endpoint.description}</span>}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {endpoint.subscribedEvents.map((event) => (
+                        <Badge key={event} variant="neutral">
+                          {event}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={endpoint.active ? 'success' : 'neutral'}>{endpoint.active ? 'Active' : 'Inactive'}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="text-xs text-accent hover:underline"
+                        disabled={testWebhookMutation.isPending}
+                        onClick={() => testWebhookMutation.mutate(endpoint.id)}
+                      >
+                        Send test
+                      </button>
+                      <button
+                        type="button"
+                        className="text-xs text-accent hover:underline"
+                        disabled={toggleWebhookMutation.isPending}
+                        onClick={() => toggleWebhookMutation.mutate({ id: endpoint.id, active: !endpoint.active })}
+                      >
+                        {endpoint.active ? 'Deactivate' : 'Reactivate'}
+                      </button>
+                      <button
+                        type="button"
+                        className="text-xs text-danger hover:underline"
+                        disabled={deleteWebhookMutation.isPending}
+                        onClick={() => deleteWebhookMutation.mutate(endpoint.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
 
         {selectedWebhookId && webhooksQuery.data && (
           <>
@@ -781,7 +788,7 @@ export default function IntegracoesPage() {
                 <Card className="flex flex-col gap-2">
                   <p className="flex items-center gap-1.5 text-sm font-medium">Signing secret</p>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 overflow-x-auto rounded-md border border-border bg-zinc-50 px-3 py-2 text-xs dark:bg-zinc-900">
+                    <code className="flex-1 overflow-x-auto rounded-md border border-border bg-card-hover px-3 py-2 text-xs">
                       {endpoint.secret}
                     </code>
                     <Button variant="secondary" onClick={() => copySecret(endpoint.secret)}>
@@ -803,50 +810,52 @@ export default function IntegracoesPage() {
 
             <Card className="flex flex-col gap-3">
               <h3 className="text-sm font-medium">Delivery log</h3>
-              <div className="overflow-x-auto rounded-lg border border-border">
-                {!webhookDeliveriesQuery.data ? (
+              {!webhookDeliveriesQuery.data ? (
+                <div className="rounded-lg border border-border">
                   <SkeletonRows rows={2} cols={4} />
-                ) : webhookDeliveriesQuery.data.length === 0 ? (
+                </div>
+              ) : webhookDeliveriesQuery.data.length === 0 ? (
+                <div className="rounded-lg border border-border">
                   <EmptyState icon={Webhook} message="No deliveries yet." />
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                      <tr>
-                        <th className="px-4 py-2 font-medium">Event</th>
-                        <th className="px-4 py-2 font-medium">Status</th>
-                        <th className="px-4 py-2 font-medium">Attempt</th>
-                        <th className="px-4 py-2 font-medium">Sent</th>
-                        <th className="px-4 py-2 font-medium"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {webhookDeliveriesQuery.data.map((delivery) => (
-                        <tr key={delivery.id} className="border-t border-border">
-                          <td className="px-4 py-2">{delivery.eventType}</td>
-                          <td className="px-4 py-2">
-                            <Badge variant={DELIVERY_STATUS_BADGE[delivery.status].variant}>{DELIVERY_STATUS_BADGE[delivery.status].label}</Badge>
-                            {delivery.errorMessage && <p className="mt-1 text-xs text-muted">{delivery.errorMessage}</p>}
-                          </td>
-                          <td className="px-4 py-2 text-muted">{delivery.attempt}</td>
-                          <td className="px-4 py-2 text-muted">{new Date(delivery.createdAt).toLocaleString('pt-BR')}</td>
-                          <td className="px-4 py-2 text-right">
-                            {(delivery.status === 'failed' || delivery.status === 'exhausted') && (
-                              <button
-                                type="button"
-                                className="text-xs text-accent hover:underline"
-                                disabled={retryDeliveryMutation.isPending}
-                                onClick={() => retryDeliveryMutation.mutate(delivery.id)}
-                              >
-                                Retry now
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <tr>
+                      <TableHead>Event</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Attempt</TableHead>
+                      <TableHead>Sent</TableHead>
+                      <TableHead></TableHead>
+                    </tr>
+                  </TableHeader>
+                  <TableBody>
+                    {webhookDeliveriesQuery.data.map((delivery) => (
+                      <TableRow key={delivery.id}>
+                        <TableCell>{delivery.eventType}</TableCell>
+                        <TableCell>
+                          <Badge variant={DELIVERY_STATUS_BADGE[delivery.status].variant}>{DELIVERY_STATUS_BADGE[delivery.status].label}</Badge>
+                          {delivery.errorMessage && <p className="mt-1 text-xs text-muted">{delivery.errorMessage}</p>}
+                        </TableCell>
+                        <TableCell numeric className="text-muted">{delivery.attempt}</TableCell>
+                        <TableCell className="text-muted">{new Date(delivery.createdAt).toLocaleString('pt-BR')}</TableCell>
+                        <TableCell className="text-right">
+                          {(delivery.status === 'failed' || delivery.status === 'exhausted') && (
+                            <button
+                              type="button"
+                              className="text-xs text-accent hover:underline"
+                              disabled={retryDeliveryMutation.isPending}
+                              onClick={() => retryDeliveryMutation.mutate(delivery.id)}
+                            >
+                              Retry now
+                            </button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </Card>
           </>
         )}

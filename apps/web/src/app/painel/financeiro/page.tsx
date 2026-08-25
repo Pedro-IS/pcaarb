@@ -12,10 +12,12 @@ import { formatCentsToBRL, parseBRLToCents } from '@/lib/currency';
 import { useAccessToken } from '@/lib/use-access-token';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const entryFormSchema = z.object({
   type: z.enum(['payable', 'receivable']),
@@ -147,15 +149,15 @@ export default function FinanceiroPage() {
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <ArrowUpCircle className="h-3.5 w-3.5" />Receivable (pending)
           </div>
-          <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.pendingReceivableCents) : '—'}</p>
+          <p className="text-lg font-semibold tabular-nums">{summary ? formatCentsToBRL(summary.pendingReceivableCents) : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <ArrowDownCircle className="h-3.5 w-3.5" />Payable (pending)
           </div>
-          <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.pendingPayableCents) : '—'}</p>
+          <p className="text-lg font-semibold tabular-nums">{summary ? formatCentsToBRL(summary.pendingPayableCents) : '—'}</p>
           {summary && summary.overduePayableCents > 0 && (
-            <p className="text-xs text-red-600">{formatCentsToBRL(summary.overduePayableCents)} overdue</p>
+            <p className="text-xs text-danger tabular-nums">{formatCentsToBRL(summary.overduePayableCents)} overdue</p>
           )}
         </Card>
         <Card className="flex flex-col gap-1">
@@ -163,14 +165,14 @@ export default function FinanceiroPage() {
             <Receipt className="h-3.5 w-3.5" />
             Received
           </div>
-          <p className="text-lg font-semibold">{summary ? formatCentsToBRL(summary.paidReceivableCents) : '—'}</p>
+          <p className="text-lg font-semibold tabular-nums">{summary ? formatCentsToBRL(summary.paidReceivableCents) : '—'}</p>
         </Card>
         <Card className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 text-xs text-muted">
             <Wallet className="h-3.5 w-3.5" />
             Balance
           </div>
-          <p className={`text-lg font-semibold ${summary && summary.netCents < 0 ? 'text-red-600' : 'text-green-600'}`}>
+          <p className={`text-lg font-semibold tabular-nums ${summary && summary.netCents < 0 ? 'text-danger' : 'text-success'}`}>
             {summary ? formatCentsToBRL(summary.netCents) : '—'}
           </p>
         </Card>
@@ -181,55 +183,55 @@ export default function FinanceiroPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Type</label>
-            <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('type')}>
+            <Select {...register('type')}>
               <option value="payable">Payable</option>
               <option value="receivable">Receivable</option>
-            </select>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Description</label>
             <Input {...register('description')} />
-            {errors.description && <p className="text-sm text-red-600">{errors.description.message}</p>}
+            {errors.description && <p className="text-sm text-danger">{errors.description.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Amount (R$)</label>
             <Input placeholder="0.00" {...register('amountReais')} />
-            {errors.amountReais && <p className="text-sm text-red-600">{errors.amountReais.message}</p>}
+            {errors.amountReais && <p className="text-sm text-danger">{errors.amountReais.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm">Due date</label>
             <Input type="date" {...register('dueDate')} />
-            {errors.dueDate && <p className="text-sm text-red-600">{errors.dueDate.message}</p>}
+            {errors.dueDate && <p className="text-sm text-danger">{errors.dueDate.message}</p>}
           </div>
           {selectedType === 'receivable' && (
             <div className="flex flex-col gap-1.5 sm:col-span-2">
               <label className="text-sm">Customer (optional)</label>
-              <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('customerId')}>
+              <Select {...register('customerId')}>
                 <option value="">No customer</option>
                 {customersQuery.data?.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           )}
           {selectedType === 'payable' && (
             <div className="flex flex-col gap-1.5 sm:col-span-2">
               <label className="text-sm">Supplier (optional)</label>
-              <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('supplierId')}>
+              <Select {...register('supplierId')}>
                 <option value="">No supplier</option>
                 {suppliersQuery.data?.map((supplier) => (
                   <option key={supplier.id} value={supplier.id}>
                     {supplier.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           )}
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-sm">Cost center (optional)</label>
-            <select className="h-10 rounded-md border border-border bg-card px-3 text-sm" {...register('costCenterId')}>
+            <Select {...register('costCenterId')}>
               <option value="">No cost center</option>
               {costCentersQuery.data
                 ?.filter((cc) => cc.active)
@@ -238,10 +240,10 @@ export default function FinanceiroPage() {
                     {costCenter.name}
                   </option>
                 ))}
-            </select>
+            </Select>
           </div>
         </div>
-        {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}
+        {errors.root && <p className="text-sm text-danger">{errors.root.message}</p>}
         <Button type="submit" loading={createMutation.isPending} className="self-start">
           Add entry
         </Button>
@@ -265,72 +267,75 @@ export default function FinanceiroPage() {
 
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted">{entriesQuery.data ? `${entriesQuery.data.length} entrie(s)` : ''}</h2>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          {!entriesQuery.data ? (
+        {!entriesQuery.data ? (
+          <div className="rounded-lg border border-border">
             <SkeletonRows rows={4} cols={5} />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Type</th>
-                  <th className="px-4 py-2 font-medium">Description</th>
-                  <th className="px-4 py-2 font-medium">Amount</th>
-                  <th className="px-4 py-2 font-medium">Due date</th>
-                  <th className="px-4 py-2 font-medium">Cost center</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {entriesQuery.data.map((entry) => (
-                  <tr key={entry.id} className="border-t border-border">
-                    <td className="px-4 py-2">{entry.type === 'payable' ? 'Payable' : 'Receivable'}</td>
-                    <td className="px-4 py-2">{entry.description}</td>
-                    <td className="px-4 py-2">{formatCentsToBRL(entry.amountCents)}</td>
-                    <td className="px-4 py-2">{entry.dueDate}</td>
-                    <td className="px-4 py-2 text-muted">
-                      {entry.costCenterId ? (costCenterNameById.get(entry.costCenterId) ?? '—') : '—'}
-                    </td>
-                    <td className="px-4 py-2">
-                      {isOverdue(entry) ? (
-                        <Badge variant="danger">Overdue</Badge>
-                      ) : entry.status === 'paid' ? (
-                        <Badge variant="success">Paid</Badge>
-                      ) : entry.status === 'canceled' ? (
-                        <Badge variant="neutral">Canceled</Badge>
-                      ) : (
-                        <Badge variant="warning">Pending</Badge>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {entry.status === 'pending' && (
-                        <div className="flex justify-end gap-3">
-                          <button
-                            type="button"
-                            className="text-xs text-green-600 hover:underline"
-                            disabled={payMutation.isPending}
-                            onClick={() => payMutation.mutate(entry.id)}
-                          >
-                            Pay
-                          </button>
-                          <button
-                            type="button"
-                            className="text-xs text-muted hover:underline"
-                            disabled={cancelMutation.isPending}
-                            onClick={() => cancelMutation.mutate(entry.id)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {entriesQuery.data?.length === 0 && <EmptyState icon={Wallet} message="No entries registered yet." />}
-        </div>
+          </div>
+        ) : entriesQuery.data.length === 0 ? (
+          <div className="rounded-lg border border-border">
+            <EmptyState icon={Wallet} message="No entries registered yet." />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableHead>Type</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Due date</TableHead>
+                <TableHead>Cost center</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {entriesQuery.data.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>{entry.type === 'payable' ? 'Payable' : 'Receivable'}</TableCell>
+                  <TableCell>{entry.description}</TableCell>
+                  <TableCell numeric>{formatCentsToBRL(entry.amountCents)}</TableCell>
+                  <TableCell>{entry.dueDate}</TableCell>
+                  <TableCell className="text-muted">
+                    {entry.costCenterId ? (costCenterNameById.get(entry.costCenterId) ?? '—') : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {isOverdue(entry) ? (
+                      <Badge variant="danger">Overdue</Badge>
+                    ) : entry.status === 'paid' ? (
+                      <Badge variant="success">Paid</Badge>
+                    ) : entry.status === 'canceled' ? (
+                      <Badge variant="neutral">Canceled</Badge>
+                    ) : (
+                      <Badge variant="warning">Pending</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {entry.status === 'pending' && (
+                      <div className="flex justify-end gap-3">
+                        <button
+                          type="button"
+                          className="text-xs text-success hover:underline"
+                          disabled={payMutation.isPending}
+                          onClick={() => payMutation.mutate(entry.id)}
+                        >
+                          Pay
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-muted hover:underline"
+                          disabled={cancelMutation.isPending}
+                          onClick={() => cancelMutation.mutate(entry.id)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </>
   );

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 export default function LojasPage() {
   const accessToken = useAccessToken();
@@ -76,48 +77,48 @@ export default function LojasPage() {
       )}
       <p className="text-xs text-muted">Operating more than one store requires the Multi-store plan — see /painel/assinatura.</p>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        {!storesQuery.data ? (
+      {!storesQuery.data ? (
+        <div className="rounded-lg border border-border">
           <SkeletonRows rows={2} cols={2} />
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-              <tr>
-                <th className="px-4 py-2 font-medium">Store</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                {canManage && <th className="px-4 py-2 font-medium"></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {storesQuery.data.map((store) => (
-                <tr key={store.id} className="border-t border-border">
-                  <td className="px-4 py-2">
-                    <span className="flex items-center gap-1.5">
-                      <StoreIcon className="h-3.5 w-3.5 text-muted" />
-                      {store.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2">
-                    <Badge variant={store.active ? 'success' : 'neutral'}>{store.active ? 'Active' : 'Inactive'}</Badge>
-                  </td>
-                  {canManage && (
-                    <td className="px-4 py-2 text-right">
-                      <button
-                        type="button"
-                        className="text-xs text-accent hover:underline"
-                        disabled={toggleActiveMutation.isPending}
-                        onClick={() => toggleActiveMutation.mutate({ id: store.id, active: !store.active })}
-                      >
-                        {store.active ? 'Deactivate' : 'Reactivate'}
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Store</TableHead>
+              <TableHead>Status</TableHead>
+              {canManage && <TableHead></TableHead>}
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {storesQuery.data.map((store) => (
+              <TableRow key={store.id}>
+                <TableCell>
+                  <span className="flex items-center gap-1.5">
+                    <StoreIcon className="h-3.5 w-3.5 text-muted" />
+                    {store.name}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={store.active ? 'success' : 'neutral'}>{store.active ? 'Active' : 'Inactive'}</Badge>
+                </TableCell>
+                {canManage && (
+                  <TableCell className="text-right">
+                    <button
+                      type="button"
+                      className="text-xs text-accent hover:underline"
+                      disabled={toggleActiveMutation.isPending}
+                      onClick={() => toggleActiveMutation.mutate({ id: store.id, active: !store.active })}
+                    >
+                      {store.active ? 'Deactivate' : 'Reactivate'}
+                    </button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </>
   );
 }

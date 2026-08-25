@@ -11,10 +11,12 @@ import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SkeletonRows } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 const LEDGER_LABELS: Record<LoyaltyLedgerEntry['type'], { label: string; variant: 'success' | 'warning' | 'neutral' }> = {
   earn: { label: 'Earned', variant: 'success' },
@@ -159,18 +161,14 @@ function CustomerLookup() {
       <h2 className="text-sm font-medium">Look up customer</h2>
       <div className="flex flex-col gap-1.5 sm:w-80">
         <label className="text-sm">Customer</label>
-        <select
-          className="h-10 rounded-md border border-border bg-card px-3 text-sm"
-          value={selectedCustomerId}
-          onChange={(e) => setSelectedCustomerId(e.target.value)}
-        >
+        <Select value={selectedCustomerId} onChange={(e) => setSelectedCustomerId(e.target.value)}>
           <option value="">Select...</option>
           {customersQuery.data?.map((customer) => (
             <option key={customer.id} value={customer.id}>
               {customer.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {selectedCustomerId && (
@@ -179,7 +177,7 @@ function CustomerLookup() {
             <div className="flex items-center gap-3 rounded-lg border border-border bg-accent-soft/40 px-4 py-3">
               <Gift className="h-5 w-5 text-accent" />
               <div>
-                <p className="text-lg font-semibold">{balanceQuery.data.balancePoints} points</p>
+                <p className="text-lg font-semibold tabular-nums">{balanceQuery.data.balancePoints} points</p>
                 <p className="text-sm text-muted">
                   worth {formatCentsToBRL(balanceQuery.data.balanceValueCents)} when redeemed
                 </p>
@@ -189,37 +187,39 @@ function CustomerLookup() {
 
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-muted">History</h3>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              {!ledgerQuery.data ? (
+            {!ledgerQuery.data ? (
+              <div className="rounded-lg border border-border">
                 <SkeletonRows rows={3} cols={3} />
-              ) : ledgerQuery.data.length === 0 ? (
+              </div>
+            ) : ledgerQuery.data.length === 0 ? (
+              <div className="rounded-lg border border-border">
                 <EmptyState icon={History} message="No point activity yet." />
-              ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-zinc-50 text-left dark:bg-zinc-900">
-                    <tr>
-                      <th className="px-4 py-2 font-medium">Date</th>
-                      <th className="px-4 py-2 font-medium">Type</th>
-                      <th className="px-4 py-2 font-medium">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ledgerQuery.data.map((entry) => (
-                      <tr key={entry.id} className="border-t border-border">
-                        <td className="px-4 py-2 text-muted">{new Date(entry.createdAt).toLocaleString('pt-BR')}</td>
-                        <td className="px-4 py-2">
-                          <Badge variant={LEDGER_LABELS[entry.type].variant}>{LEDGER_LABELS[entry.type].label}</Badge>
-                        </td>
-                        <td className={`px-4 py-2 font-medium ${entry.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {entry.points > 0 ? '+' : ''}
-                          {entry.points}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <tr>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Points</TableHead>
+                  </tr>
+                </TableHeader>
+                <TableBody>
+                  {ledgerQuery.data.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="text-muted">{new Date(entry.createdAt).toLocaleString('pt-BR')}</TableCell>
+                      <TableCell>
+                        <Badge variant={LEDGER_LABELS[entry.type].variant}>{LEDGER_LABELS[entry.type].label}</Badge>
+                      </TableCell>
+                      <TableCell numeric className={`font-medium ${entry.points >= 0 ? 'text-success' : 'text-danger'}`}>
+                        {entry.points > 0 ? '+' : ''}
+                        {entry.points}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </>
       )}
