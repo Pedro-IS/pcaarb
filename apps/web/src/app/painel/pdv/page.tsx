@@ -20,6 +20,7 @@ import {
 } from '@/lib/offline-sale-queue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -470,18 +471,14 @@ export default function PdvPage() {
             {activeStores.length > 1 && (
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm">Store</label>
-                <select
-                  className="h-10 rounded-md border border-border bg-card px-3 text-sm"
-                  value={selectedStoreId}
-                  onChange={(e) => setSelectedStoreId(e.target.value)}
-                >
+                <Select value={selectedStoreId} onChange={(e) => setSelectedStoreId(e.target.value)}>
                   <option value="">Select...</option>
                   {activeStores.map((store) => (
                     <option key={store.id} value={store.id}>
                       {store.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             )}
             <div className="flex flex-1 flex-col gap-1.5">
@@ -503,7 +500,7 @@ export default function PdvPage() {
         </Card>
       ) : (
         <>
-          <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm dark:border-green-900 dark:bg-green-950">
+          <div className="flex items-center justify-between rounded-lg border border-success/40 bg-success-soft px-4 py-2 text-sm">
             <span>Register open — opened with {formatCentsToBRL(sessionQuery.data.openingAmountCents)}</span>
             <div className="flex items-center gap-2">
               {!isOnline && (
@@ -539,25 +536,25 @@ export default function PdvPage() {
               )}
               {attentionSales.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <p className="flex items-center gap-1.5 text-sm text-amber-700 dark:text-amber-500">
+                  <p className="flex items-center gap-1.5 text-sm text-warning">
                     <AlertTriangle className="h-3.5 w-3.5" />
                     {attentionSales.length} offline sale(s) could not be synced — they need attention:
                   </p>
                   {attentionSales.map((sale) => (
                     <div
                       key={sale.clientSaleId}
-                      className="flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs dark:border-amber-900 dark:bg-amber-950"
+                      className="flex items-center justify-between rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-xs"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span>
                           Sale from {new Date(sale.queuedAt).toLocaleString('pt-BR')} —{' '}
                           {formatSaleQueueTotal(sale)}
                         </span>
-                        <span className="text-amber-700 dark:text-amber-500">{sale.lastError}</span>
+                        <span className="text-warning">{sale.lastError}</span>
                       </div>
                       <button
                         type="button"
-                        className="shrink-0 text-red-600 hover:underline"
+                        className="shrink-0 text-danger hover:underline"
                         onClick={() => discardAttentionSale(sale.clientSaleId)}
                       >
                         Discard
@@ -576,25 +573,25 @@ export default function PdvPage() {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm dark:border-blue-900 dark:bg-blue-950">
-                  <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                <div className="flex items-start gap-3 rounded-lg border border-info/40 bg-info-soft px-4 py-3 text-sm">
+                  <Receipt className="mt-0.5 h-4 w-4 shrink-0 text-info" />
                   <div className="flex flex-col gap-1">
                     <span>
                       Sale recorded: {formatCentsToBRL(lastSale.totalCents)} ({lastSale.items.length} item
                       {lastSale.items.length === 1 ? '' : 's'})
                     </span>
                     {lastSale.fiscalDocument?.status === 'authorized' && (
-                      <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                      <span className="text-xs text-muted">
                         NFC-e authorized (sandbox) — key {lastSale.fiscalDocument.accessKey}
                       </span>
                     )}
                     {lastSale.fiscalDocument?.status === 'rejected' && (
-                      <span className="text-xs text-amber-700 dark:text-amber-500">
+                      <span className="text-xs text-warning">
                         NFC-e not issued: {lastSale.fiscalDocument.rejectionReason}. Reissue it later from Sales.
                       </span>
                     )}
                     {lastSale.pointsEarned > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-zinc-600 dark:text-zinc-400">
+                      <span className="flex items-center gap-1 text-xs text-muted">
                         <Gift className="h-3.5 w-3.5" />
                         Customer earned {lastSale.pointsEarned} loyalty point(s)
                       </span>
@@ -621,8 +618,7 @@ export default function PdvPage() {
 
             <div className="flex flex-col gap-1.5 sm:w-80">
               <label className="text-sm">Customer (optional)</label>
-              <select
-                className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+              <Select
                 value={selectedCustomerId}
                 onChange={(e) => {
                   setSelectedCustomerId(e.target.value);
@@ -635,7 +631,7 @@ export default function PdvPage() {
                     {customer.name}
                   </option>
                 ))}
-              </select>
+              </Select>
               {selectedCustomerId && customerBalanceQuery.data && (
                 <p className="flex items-center gap-1 text-xs text-muted">
                   <Gift className="h-3.5 w-3.5" />
@@ -648,11 +644,7 @@ export default function PdvPage() {
             <div className="flex items-end gap-2">
               <div className="flex flex-1 flex-col gap-1.5">
                 <label className="text-sm">Product</label>
-                <select
-                  className="h-10 rounded-md border border-border bg-card px-3 text-sm"
-                  value={selectedProductId}
-                  onChange={(e) => setSelectedProductId(e.target.value)}
-                >
+                <Select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)}>
                   <option value="">Select...</option>
                   {productsQuery.data
                     ?.filter((p) => p.active)
@@ -661,7 +653,7 @@ export default function PdvPage() {
                         {product.name} — {formatCentsToBRL(product.priceCents)}
                       </option>
                     ))}
-                </select>
+                </Select>
               </div>
               <Button type="button" variant="secondary" onClick={addToCart} disabled={!selectedProductId}>
                 <Plus className="h-4 w-4" />
@@ -691,13 +683,13 @@ export default function PdvPage() {
                       className="border-t border-border"
                     >
                       <td className="py-1.5">{line.name}</td>
-                      <td className="py-1.5">{line.quantity}</td>
-                      <td className="py-1.5">{formatCentsToBRL(line.priceCents)}</td>
-                      <td className="py-1.5">{formatCentsToBRL(line.priceCents * line.quantity)}</td>
+                      <td className="py-1.5 tabular-nums">{line.quantity}</td>
+                      <td className="py-1.5 font-mono tabular-nums">{formatCentsToBRL(line.priceCents)}</td>
+                      <td className="py-1.5 font-mono tabular-nums">{formatCentsToBRL(line.priceCents * line.quantity)}</td>
                       <td className="py-1.5">
                         <button
                           type="button"
-                          className="text-red-600 transition-colors hover:text-red-500"
+                          className="text-danger transition-colors hover:opacity-75"
                           onClick={() => removeFromCart(line.productId)}
                           aria-label="Remove"
                         >
@@ -736,17 +728,17 @@ export default function PdvPage() {
             <div className="flex flex-col gap-1 self-end text-right text-sm sm:w-64">
               <div className="flex justify-between">
                 <span className="text-muted">Subtotal</span>
-                <span>{formatCentsToBRL(subtotalCents)}</span>
+                <span className="tabular-nums">{formatCentsToBRL(subtotalCents)}</span>
               </div>
               {redemptionValueCents > 0 && (
                 <div className="flex justify-between text-muted">
                   <span>Points redeemed</span>
-                  <span>-{formatCentsToBRL(redemptionValueCents)}</span>
+                  <span className="tabular-nums">-{formatCentsToBRL(redemptionValueCents)}</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>{formatCentsToBRL(totalCents)}</span>
+                <span className="tabular-nums">{formatCentsToBRL(totalCents)}</span>
               </div>
             </div>
 
@@ -770,8 +762,7 @@ export default function PdvPage() {
                   >
                     <div className="flex flex-1 flex-col gap-1.5">
                       <label className="text-sm">Method</label>
-                      <select
-                        className="h-10 rounded-md border border-border bg-card px-3 text-sm"
+                      <Select
                         value={payment.method}
                         onChange={(e) => updatePayment(index, { method: e.target.value as PaymentMethod })}
                       >
@@ -780,7 +771,7 @@ export default function PdvPage() {
                             {label}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                     <div className="flex flex-1 flex-col gap-1.5">
                       <label className="text-sm">Amount (R$)</label>
@@ -792,7 +783,7 @@ export default function PdvPage() {
                     </div>
                     <button
                       type="button"
-                      className="flex h-10 w-10 items-center justify-center text-red-600 transition-colors hover:text-red-500"
+                      className="flex h-10 w-10 items-center justify-center text-danger transition-colors hover:opacity-75"
                       onClick={() => removePayment(index)}
                       aria-label="Remove payment method"
                     >
@@ -801,7 +792,7 @@ export default function PdvPage() {
                   </motion.div>
                 ))}
               </AnimatePresence>
-              <p className={`text-right text-sm ${remainingCents === 0 ? 'text-green-600' : 'text-muted'}`}>
+              <p className={`text-right text-sm tabular-nums ${remainingCents === 0 ? 'text-success' : 'text-muted'}`}>
                 {remainingCents > 0
                   ? `${formatCentsToBRL(remainingCents)} remaining`
                   : remainingCents < 0
@@ -810,7 +801,7 @@ export default function PdvPage() {
               </p>
             </div>
 
-            {saleError && <p className="text-sm text-red-600">{saleError}</p>}
+            {saleError && <p className="text-sm text-danger">{saleError}</p>}
 
             <Button
               className="self-start"
@@ -827,14 +818,10 @@ export default function PdvPage() {
             <div className="flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm">Type</label>
-                <select
-                  className="h-10 rounded-md border border-border bg-card px-3 text-sm"
-                  value={movementType}
-                  onChange={(e) => setMovementType(e.target.value as 'sangria' | 'suprimento')}
-                >
+                <Select value={movementType} onChange={(e) => setMovementType(e.target.value as 'sangria' | 'suprimento')}>
                   <option value="sangria">Withdrawal</option>
                   <option value="suprimento">Deposit</option>
-                </select>
+                </Select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm">Amount (R$)</label>
