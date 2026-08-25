@@ -28,6 +28,7 @@ import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
+import { HelpHint } from '@/components/ui/help-hint';
 import { SkeletonRows } from '@/components/ui/skeleton';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ROLE_LABELS } from '@/lib/role-labels';
@@ -239,6 +240,7 @@ export default function UsuariosPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+      <p className="text-sm text-muted">Who has access, their role, and any individual permission overrides.</p>
 
       <Card as="form" className="flex flex-col gap-4" onSubmit={handleSubmit((values) => inviteMutation.mutate(values))}>
         <h2 className="flex items-center gap-2 text-sm font-medium">
@@ -252,7 +254,14 @@ export default function UsuariosPage() {
             {errors.email && <p className="text-sm text-danger">{errors.email.message}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm">Role</label>
+            <label className="flex items-center gap-1.5 text-sm">
+              Role
+              <HelpHint>
+                Owner: full access, including billing and the audit log. Admin: everything except billing/audit.
+                Financeiro: accounts payable/receivable and cost centers, read-only elsewhere. Operador de caixa:
+                sales and cash sessions only.
+              </HelpHint>
+            </label>
             <Select {...register('role')}>
               {Object.entries(ROLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>

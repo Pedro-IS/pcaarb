@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
+import { HelpHint } from '@/components/ui/help-hint';
 import { SkeletonRows } from '@/components/ui/skeleton';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
@@ -125,6 +126,7 @@ export default function AssinaturaPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Subscription</h1>
+      <p className="text-sm text-muted">Your current plan, billing history, and plan changes.</p>
 
       {trialing && tenant?.trialEndsAt && (
         <Card className="flex items-center gap-3 border-accent/40 bg-accent-soft/40">
@@ -173,7 +175,12 @@ export default function AssinaturaPage() {
 
       {canManage && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-muted">{subscription && subscription.status !== 'canceled' ? 'Change plan' : 'Choose a plan'}</h2>
+          <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted">
+            {subscription && subscription.status !== 'canceled' ? 'Change plan' : 'Choose a plan'}
+            {subscription && subscription.status !== 'canceled' && (
+              <HelpHint>Switching plans charges the new price immediately and restarts your billing cycle from today.</HelpHint>
+            )}
+          </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {PLAN_ORDER.map((plan) => {
               const catalog = SUBSCRIPTION_PLAN_CATALOG[plan];

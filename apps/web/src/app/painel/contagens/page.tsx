@@ -105,6 +105,7 @@ export default function ContagensPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Inventory</h1>
+      <p className="text-sm text-muted">Physical stock counts — enter what&rsquo;s actually on the shelf and reconcile it against the system balance.</p>
 
       {!countsQuery.data ? (
         <Card>

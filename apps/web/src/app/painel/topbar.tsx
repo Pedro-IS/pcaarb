@@ -11,6 +11,7 @@ import {
   Contact,
   CreditCard,
   Gift,
+  HelpCircle,
   History,
   LayoutDashboard,
   LogOut,
@@ -255,7 +256,7 @@ export function Topbar() {
           {meQuery.data ? (
             <div className="flex items-center gap-2">
               <LogoMark hasLogo={meQuery.data.tenant.hasLogo} className="h-7 w-7" />
-              <div className="text-right text-xs leading-tight">
+              <div className="whitespace-nowrap text-right text-xs leading-tight">
                 <p className="font-medium">{meQuery.data.tenant.displayName ?? meQuery.data.tenant.companyName}</p>
                 <p className="text-muted">
                   {meQuery.data.user.name} · {ROLE_LABELS[meQuery.data.user.role]}
@@ -268,6 +269,13 @@ export function Topbar() {
               <Skeleton className="h-3 w-16" />
             </div>
           )}
+          <Link
+            href="/painel/ajuda"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-card-hover hover:text-foreground"
+            title="Help"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </Link>
           <ThemeToggle />
           <button
             type="button"

@@ -325,6 +325,7 @@ export default function VendasPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Sales</h1>
+      <p className="text-sm text-muted">Completed sales, with receipt reprint and returns/refunds.</p>
 
       {!salesQuery.data ? (
         <div className="rounded-lg border border-border">

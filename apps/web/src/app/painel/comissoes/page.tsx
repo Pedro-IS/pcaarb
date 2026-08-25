@@ -337,6 +337,7 @@ export default function ComissoesPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Seller commissions</h1>
+      <p className="text-sm text-muted">Commission rates per seller and the resulting payout report.</p>
       <CommissionSettingsSection />
       <SellerRates />
       <CommissionReportSection />

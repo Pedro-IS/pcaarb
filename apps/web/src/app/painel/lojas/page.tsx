@@ -63,6 +63,7 @@ export default function LojasPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Stores</h1>
+      <p className="text-sm text-muted">The physical stores under this account.</p>
 
       {canManage && (
         <Card className="flex items-end gap-2">

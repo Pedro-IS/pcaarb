@@ -114,6 +114,7 @@ export default function RelatoriosPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
+      <p className="text-sm text-muted">Revenue, ranking, and stock reports across the business.</p>
 
       <Card className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">

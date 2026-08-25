@@ -25,6 +25,7 @@ import { Select } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
+import { HelpHint } from '@/components/ui/help-hint';
 import { SaleReceipt } from '@/components/pdv/sale-receipt';
 
 interface CartLine {
@@ -464,6 +465,7 @@ export default function PdvPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">POS</h1>
+      <p className="text-sm text-muted">Ring up sales for the currently open cash register.</p>
 
       {!sessionQuery.data ? (
         <Card className="flex flex-col gap-4">
@@ -818,7 +820,14 @@ export default function PdvPage() {
           </Card>
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium">Cash withdrawal / deposit</h2>
+            <h2 className="flex items-center gap-1.5 text-sm font-medium">
+              Cash withdrawal / deposit
+              <HelpHint>
+                Withdrawal removes cash from the drawer without a sale (e.g. paying a supplier in cash). Deposit adds
+                cash beyond the opening amount (e.g. topping up change). Both are recorded and counted when closing
+                the register.
+              </HelpHint>
+            </h2>
             <div className="flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm">Type</label>
@@ -847,7 +856,13 @@ export default function PdvPage() {
           </Card>
 
           <Card className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium">Close register</h2>
+            <h2 className="flex items-center gap-1.5 text-sm font-medium">
+              Close register
+              <HelpHint>
+                Count the cash physically in the drawer and enter it here. The system compares it against the
+                expected balance (opening amount + cash sales + deposits − withdrawals) and records any difference.
+              </HelpHint>
+            </h2>
             <div className="flex items-end gap-2">
               <div className="flex flex-1 flex-col gap-1.5">
                 <label className="text-sm">Counted amount (R$)</label>

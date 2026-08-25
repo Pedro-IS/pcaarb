@@ -231,6 +231,7 @@ export default function FidelidadePage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Loyalty</h1>
+      <p className="text-sm text-muted">The points program — how customers earn and redeem loyalty points.</p>
       <ProgramSettings />
       <CustomerLookup />
     </>

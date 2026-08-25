@@ -143,6 +143,7 @@ export default function FinanceiroPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Finance</h1>
+      <p className="text-sm text-muted">Accounts payable and receivable, and a simplified profit &amp; loss.</p>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card className="flex flex-col gap-1">

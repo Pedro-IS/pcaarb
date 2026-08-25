@@ -252,6 +252,7 @@ export default function CadastrosPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Customers & Suppliers</h1>
+      <p className="text-sm text-muted">The people you sell to and the businesses you buy from.</p>
 
       <div className="flex gap-1 border-b border-border">
         {(Object.keys(RESOURCE_CONFIG) as Resource[]).map((key) => {

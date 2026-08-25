@@ -162,6 +162,7 @@ export default function ComprasPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Purchases</h1>
+      <p className="text-sm text-muted">Purchase orders to suppliers — draft, receive, and the stock/cost updates that come with it.</p>
 
       <Card className="flex flex-col gap-4">
         <h2 className="text-sm font-medium">New order</h2>

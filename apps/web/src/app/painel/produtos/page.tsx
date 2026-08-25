@@ -122,6 +122,7 @@ export default function ProdutosPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
+      <p className="text-sm text-muted">Your product and category catalog, with pricing and stock tracking settings.</p>
 
       <Card
         as="form"
