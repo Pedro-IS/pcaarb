@@ -23,6 +23,8 @@ export type TenantStatus = z.infer<typeof tenantStatusSchema>;
 export const tenantSchema = z.object({
   id: z.string().uuid(),
   companyName: z.string(),
+  displayName: z.string().nullable(),
+  hasLogo: z.boolean(),
   document: z.string(),
   status: tenantStatusSchema,
   trialEndsAt: z.string().datetime().nullable(),
@@ -30,3 +32,20 @@ export const tenantSchema = z.object({
 });
 
 export type Tenant = z.infer<typeof tenantSchema>;
+
+// displayName always arrives as a string — this is submitted as multipart
+// form data (alongside the logo file), which has no way to carry a real
+// `null`. An empty string means "clear it, fall back to companyName".
+export const updateTenantBrandingSchema = z.object({
+  displayName: z
+    .string()
+    .trim()
+    .max(120)
+    .transform((value) => (value.length === 0 ? null : value))
+    .refine((value) => value === null || value.length >= 2, 'Nome muito curto'),
+});
+
+export type UpdateTenantBrandingInput = z.infer<typeof updateTenantBrandingSchema>;
+
+export const TENANT_LOGO_MAX_BYTES = 512 * 1024;
+export const TENANT_LOGO_ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;

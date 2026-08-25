@@ -19,6 +19,7 @@ import { apiFetch, ApiError } from '@/lib/api-client';
 import { formatCentsToBRL } from '@/lib/currency';
 import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
+import { useTenantLogoUrl } from '@/lib/use-tenant-logo';
 import { Button } from '@/components/ui/button';
 import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -55,10 +56,14 @@ function SaleDetail({
   sale,
   storeName,
   companyName,
+  displayName,
+  logoUrl,
 }: {
   sale: Sale;
   storeName: string | undefined;
   companyName: string;
+  displayName?: string | null;
+  logoUrl?: string | null;
 }) {
   const accessToken = useAccessToken();
   const queryClient = useQueryClient();
@@ -274,7 +279,7 @@ function SaleDetail({
         ))}
       </div>
 
-      <SaleReceipt sale={sale} companyName={companyName} storeName={storeName} />
+      <SaleReceipt sale={sale} companyName={companyName} displayName={displayName} logoUrl={logoUrl} storeName={storeName} />
     </div>
   );
 }
@@ -282,6 +287,7 @@ function SaleDetail({
 export default function VendasPage() {
   const accessToken = useAccessToken();
   const meQuery = useCurrentUser();
+  const logoUrl = useTenantLogoUrl(meQuery.data?.tenant.hasLogo);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const salesQuery = useQuery({
@@ -382,6 +388,8 @@ export default function VendasPage() {
                                     ?.name
                                 }
                                 companyName={meQuery.data?.tenant.companyName ?? ''}
+                                displayName={meQuery.data?.tenant.displayName}
+                                logoUrl={logoUrl}
                               />
                             )}
                           </motion.div>

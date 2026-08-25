@@ -10,6 +10,7 @@ import { apiFetch, ApiError } from '@/lib/api-client';
 import { formatCentsToBRL, parseBRLToCents } from '@/lib/currency';
 import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
+import { useTenantLogoUrl } from '@/lib/use-tenant-logo';
 import { useOnlineStatus } from '@/lib/use-online-status';
 import {
   enqueueOfflineSale,
@@ -108,6 +109,7 @@ export default function PdvPage() {
   const queryClient = useQueryClient();
   const meQuery = useCurrentUser();
   const tenantId = meQuery.data?.tenant.id;
+  const logoUrl = useTenantLogoUrl(meQuery.data?.tenant.hasLogo);
   const isOnline = useOnlineStatus();
 
   const offlineQueueQuery = useQuery({
@@ -609,6 +611,8 @@ export default function PdvPage() {
             <SaleReceipt
               sale={lastSale}
               companyName={meQuery.data?.tenant.companyName ?? ''}
+              displayName={meQuery.data?.tenant.displayName}
+              logoUrl={logoUrl}
               storeName={storesQuery.data?.find((store) => store.id === lastSale.storeId)?.name}
             />
           )}

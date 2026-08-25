@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   BarChart3,
+  Building2,
   ChevronDown,
   ClipboardList,
   Contact,
@@ -29,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { apiFetch } from '@/lib/api-client';
 import { ROLE_LABELS } from '@/lib/role-labels';
 import { useCurrentUser } from '@/lib/use-current-user';
+import { LogoMark } from '@/components/ui/logo-mark';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
@@ -84,6 +86,7 @@ const NAV_ENTRIES: NavEntry[] = [
     icon: Settings,
     items: [
       { href: '/painel/lojas', label: 'Stores', icon: Store },
+      { href: '/painel/empresa', label: 'Company', icon: Building2 },
       { href: '/painel/integracoes', label: 'Integrations', icon: Plug },
       { href: '/painel/usuarios', label: 'Users', icon: Users },
       { href: '/painel/assinatura', label: 'Subscription', icon: CreditCard },
@@ -250,11 +253,14 @@ export function Topbar() {
 
         <div className="flex items-center gap-3">
           {meQuery.data ? (
-            <div className="text-right text-xs leading-tight">
-              <p className="font-medium">{meQuery.data.tenant.companyName}</p>
-              <p className="text-muted">
-                {meQuery.data.user.name} · {ROLE_LABELS[meQuery.data.user.role]}
-              </p>
+            <div className="flex items-center gap-2">
+              <LogoMark hasLogo={meQuery.data.tenant.hasLogo} className="h-7 w-7" />
+              <div className="text-right text-xs leading-tight">
+                <p className="font-medium">{meQuery.data.tenant.displayName ?? meQuery.data.tenant.companyName}</p>
+                <p className="text-muted">
+                  {meQuery.data.user.name} · {ROLE_LABELS[meQuery.data.user.role]}
+                </p>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-end gap-1">

@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 // Value import: needed for NestJS to inject via emitDecoratorMetadata.
 import { ConfigService } from '@nestjs/config';
 import { eq, sql } from 'drizzle-orm';
@@ -10,6 +10,12 @@ import { tenants, users, stores, type TenantRow, type UserRow } from '../../data
 
 const BCRYPT_ROUNDS = 12;
 
+interface UpdateBrandingInput {
+  displayName: string | null;
+  logoBuffer?: Buffer;
+  logoMimeType?: string;
+}
+
 @Injectable()
 export class TenantsService {
   constructor(
@@ -20,6 +26,55 @@ export class TenantsService {
   async findById(id: string): Promise<TenantRow | undefined> {
     const [tenant] = await this.db.select().from(tenants).where(eq(tenants.id, id)).limit(1);
     return tenant;
+  }
+
+  // Strips the logo bytes out of a TenantRow — every route that returns the
+  // tenant to the client (GET /users/me, branding updates) must use this,
+  // never the raw row, or every one of those responses would carry the full
+  // image payload. hasLogo lets the frontend decide whether to render
+  // GET /tenants/branding/logo at all.
+  toSafeTenant(tenant: TenantRow) {
+    const { logo, logoMimeType: _logoMimeType, ...rest } = tenant;
+    return { ...rest, hasLogo: logo !== null };
+  }
+
+  async updateBranding(tenantId: string, input: UpdateBrandingInput): Promise<TenantRow> {
+    const [tenant] = await this.db
+      .update(tenants)
+      .set({
+        displayName: input.displayName,
+        ...(input.logoBuffer ? { logo: input.logoBuffer, logoMimeType: input.logoMimeType ?? null } : {}),
+      })
+      .where(eq(tenants.id, tenantId))
+      .returning();
+    if (!tenant) {
+      throw new NotFoundException('Tenant não encontrado');
+    }
+    return tenant;
+  }
+
+  async removeLogo(tenantId: string): Promise<TenantRow> {
+    const [tenant] = await this.db
+      .update(tenants)
+      .set({ logo: null, logoMimeType: null })
+      .where(eq(tenants.id, tenantId))
+      .returning();
+    if (!tenant) {
+      throw new NotFoundException('Tenant não encontrado');
+    }
+    return tenant;
+  }
+
+  async getLogo(tenantId: string): Promise<{ data: Buffer; mimeType: string } | undefined> {
+    const [row] = await this.db
+      .select({ logo: tenants.logo, logoMimeType: tenants.logoMimeType })
+      .from(tenants)
+      .where(eq(tenants.id, tenantId))
+      .limit(1);
+    if (!row?.logo || !row.logoMimeType) {
+      return undefined;
+    }
+    return { data: row.logo, mimeType: row.logoMimeType };
   }
 
   /** Creates the tenant and its owner user in a single transaction — Phase 0: self-service onboarding. */

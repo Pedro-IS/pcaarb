@@ -33,6 +33,44 @@ export async function apiFetch<TResponse>(
   return data as TResponse;
 }
 
+// Multipart body (file upload) — must NOT set Content-Type manually, the
+// browser sets it (with the multipart boundary) from the FormData instance.
+export async function apiUpload<TResponse>(
+  path: string,
+  formData: FormData,
+  accessToken: string,
+  method: 'POST' | 'PATCH' = 'PATCH',
+): Promise<TResponse> {
+  const response = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => undefined);
+
+  if (!response.ok) {
+    throw new ApiError(data?.message ?? 'Erro inesperado', response.status, data?.issues);
+  }
+
+  return data as TResponse;
+}
+
+// Authenticated binary fetch (the tenant logo) — undefined on 404, which is
+// the normal "no logo set" state, not an error.
+export async function apiFetchBlob(path: string, accessToken: string): Promise<Blob | undefined> {
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (response.status === 404) {
+    return undefined;
+  }
+  if (!response.ok) {
+    throw new ApiError('Erro ao buscar arquivo', response.status);
+  }
+  return response.blob();
+}
+
 // Downloads (CSV etc.) aren't JSON — the backend sends Content-Disposition
 // with the file name, so we read it from there instead of hardcoding a name on the frontend.
 export async function apiDownload(path: string, accessToken: string): Promise<void> {

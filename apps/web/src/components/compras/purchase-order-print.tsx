@@ -4,6 +4,8 @@ import { formatCentsToBRL } from '@/lib/currency';
 interface PurchaseOrderPrintProps {
   order: PurchaseOrder;
   companyName: string;
+  displayName?: string | null;
+  logoUrl?: string | null;
   supplier: Supplier | undefined;
 }
 
@@ -11,15 +13,20 @@ interface PurchaseOrderPrintProps {
 // in globals.css) — never shows up on the normal Compras screen. Commercial-
 // document layout (full width, not the narrow PDV receipt): it's what the
 // store owner sends to the supplier, it needs to look like a real purchase order.
-export function PurchaseOrderPrint({ order, companyName, supplier }: PurchaseOrderPrintProps) {
+export function PurchaseOrderPrint({ order, companyName, displayName, logoUrl, supplier }: PurchaseOrderPrintProps) {
   const createdAt = new Date(order.createdAt);
 
   return (
     <div className="print-target w-[700px] p-8 text-sm text-black">
       <div className="flex items-start justify-between border-b border-black pb-4">
-        <div>
-          <p className="text-lg font-bold">{companyName}</p>
-          <p className="text-muted">Purchase order</p>
+        <div className="flex items-center gap-3">
+          {/* next/image can't optimize a blob: URL, see LogoMark. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {logoUrl && <img src={logoUrl} alt="" className="h-12 w-12 object-contain" />}
+          <div>
+            <p className="text-lg font-bold">{displayName || companyName}</p>
+            <p className="text-muted">Purchase order</p>
+          </div>
         </div>
         <div className="text-right">
           <p className="font-semibold">No. {order.id.slice(0, 8)}</p>

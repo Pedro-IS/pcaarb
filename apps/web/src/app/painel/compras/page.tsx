@@ -10,6 +10,7 @@ import { apiFetch, ApiError } from '@/lib/api-client';
 import { formatCentsToBRL, parseBRLToCents } from '@/lib/currency';
 import { useAccessToken } from '@/lib/use-access-token';
 import { useCurrentUser } from '@/lib/use-current-user';
+import { useTenantLogoUrl } from '@/lib/use-tenant-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -31,6 +32,7 @@ export default function ComprasPage() {
   const accessToken = useAccessToken();
   const queryClient = useQueryClient();
   const meQuery = useCurrentUser();
+  const logoUrl = useTenantLogoUrl(meQuery.data?.tenant.hasLogo);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const ordersQuery = useQuery({
@@ -389,6 +391,8 @@ export default function ComprasPage() {
                               <PurchaseOrderPrint
                                 order={order}
                                 companyName={meQuery.data?.tenant.companyName ?? ''}
+                                displayName={meQuery.data?.tenant.displayName}
+                                logoUrl={logoUrl}
                                 supplier={supplier}
                               />
                             </motion.div>

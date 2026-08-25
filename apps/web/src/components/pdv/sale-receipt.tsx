@@ -11,6 +11,8 @@ const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 interface SaleReceiptProps {
   sale: Sale;
   companyName: string;
+  displayName?: string | null;
+  logoUrl?: string | null;
   storeName?: string;
 }
 
@@ -18,13 +20,19 @@ interface SaleReceiptProps {
 // — never shows up on the normal PDV screen. Narrow layout (thermal receipt
 // printer width), monospace font, deliberately no design-system components
 // (Card/Badge): it's a document to hand to the customer, not a panel screen.
-export function SaleReceipt({ sale, companyName, storeName }: SaleReceiptProps) {
+// companyName is what fiscal text (NFC-e) below always uses — displayName
+// (nome fantasia) is presentation-only, shown here because a receipt is
+// customer-facing, not a legal document itself.
+export function SaleReceipt({ sale, companyName, displayName, logoUrl, storeName }: SaleReceiptProps) {
   const createdAt = new Date(sale.createdAt);
 
   return (
     <div className="print-target w-[300px] p-2 font-mono text-xs text-black">
       <div className="text-center">
-        <p className="font-bold">{companyName}</p>
+        {/* next/image can't optimize a blob: URL, see LogoMark. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {logoUrl && <img src={logoUrl} alt="" className="mx-auto mb-1 h-10 w-10 object-contain" />}
+        <p className="font-bold">{displayName || companyName}</p>
         {storeName && <p>{storeName}</p>}
         <p>Sale receipt</p>
       </div>

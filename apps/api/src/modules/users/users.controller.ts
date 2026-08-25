@@ -55,7 +55,7 @@ export class UsersController {
     if (!me || !tenant) {
       throw new NotFoundException('Usuário ou tenant não encontrado');
     }
-    return { user: toSafeUser(me), tenant };
+    return { user: toSafeUser(me), tenant: this.tenantsService.toSafeTenant(tenant) };
   }
 
   @CheckAbilities({ action: 'read', subject: 'User' })
