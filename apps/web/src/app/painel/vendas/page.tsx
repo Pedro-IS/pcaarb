@@ -58,12 +58,14 @@ function SaleDetail({
   companyName,
   displayName,
   logoUrl,
+  paperWidthMm,
 }: {
   sale: Sale;
   storeName: string | undefined;
   companyName: string;
   displayName?: string | null;
   logoUrl?: string | null;
+  paperWidthMm?: 58 | 80;
 }) {
   const accessToken = useAccessToken();
   const queryClient = useQueryClient();
@@ -279,7 +281,14 @@ function SaleDetail({
         ))}
       </div>
 
-      <SaleReceipt sale={sale} companyName={companyName} displayName={displayName} logoUrl={logoUrl} storeName={storeName} />
+      <SaleReceipt
+        sale={sale}
+        companyName={companyName}
+        displayName={displayName}
+        logoUrl={logoUrl}
+        storeName={storeName}
+        paperWidthMm={paperWidthMm}
+      />
     </div>
   );
 }
@@ -391,6 +400,10 @@ export default function VendasPage() {
                                 companyName={meQuery.data?.tenant.companyName ?? ''}
                                 displayName={meQuery.data?.tenant.displayName}
                                 logoUrl={logoUrl}
+                                paperWidthMm={
+                                  storesQuery.data?.find((store) => store.id === sale.storeId)
+                                    ?.receiptPaperWidthMm
+                                }
                               />
                             )}
                           </motion.div>

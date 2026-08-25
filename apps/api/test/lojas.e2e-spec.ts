@@ -111,6 +111,38 @@ describe('Lojas / multi-loja (e2e)', () => {
     expect(cashierReads.status).toBe(200);
   });
 
+  it('perfil de impressora: valores default, atualização, e financeiro não pode escrever', async () => {
+    const tenant = await registerTenant(app, 'lojas-impressora');
+    const financeiro = await mintUser(app, db, tenant.tenantId, 'financeiro');
+
+    const list = await request(app.getHttpServer()).get('/api/stores').set('Authorization', `Bearer ${tenant.accessToken}`);
+    const storeId = list.body[0].id as string;
+    expect(list.body[0].receiptPaperWidthMm).toBe(80);
+    expect(list.body[0].receiptAutoPrint).toBe(false);
+    expect(list.body[0].printerLabel).toBeNull();
+
+    const financeiroUpdate = await request(app.getHttpServer())
+      .patch(`/api/stores/${storeId}`)
+      .set('Authorization', `Bearer ${financeiro.accessToken}`)
+      .send({ receiptPaperWidthMm: 58 });
+    expect(financeiroUpdate.status).toBe(403);
+
+    const update = await request(app.getHttpServer())
+      .patch(`/api/stores/${storeId}`)
+      .set('Authorization', `Bearer ${tenant.accessToken}`)
+      .send({ receiptPaperWidthMm: 58, receiptAutoPrint: true, printerLabel: 'Caixa 1' });
+    expect(update.status).toBe(200);
+    expect(update.body.receiptPaperWidthMm).toBe(58);
+    expect(update.body.receiptAutoPrint).toBe(true);
+    expect(update.body.printerLabel).toBe('Caixa 1');
+
+    const invalidWidth = await request(app.getHttpServer())
+      .patch(`/api/stores/${storeId}`)
+      .set('Authorization', `Bearer ${tenant.accessToken}`)
+      .send({ receiptPaperWidthMm: 100 });
+    expect(invalidWidth.status).toBe(400);
+  });
+
   it('não permite desativar a única loja ativa do tenant', async () => {
     const tenant = await registerTenant(app, 'lojas-unica-ativa');
     const list = await request(app.getHttpServer()).get('/api/stores').set('Authorization', `Bearer ${tenant.accessToken}`);

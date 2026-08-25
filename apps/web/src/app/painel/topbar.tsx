@@ -19,6 +19,7 @@ import {
   Package,
   Percent,
   Plug,
+  Printer,
   Receipt,
   Settings,
   ShoppingBag,
@@ -88,6 +89,7 @@ const NAV_ENTRIES: NavEntry[] = [
     items: [
       { href: '/painel/lojas', label: 'Stores', icon: Store },
       { href: '/painel/empresa', label: 'Company', icon: Building2 },
+      { href: '/painel/impressoras', label: 'Printers', icon: Printer },
       { href: '/painel/integracoes', label: 'Integrations', icon: Plug },
       { href: '/painel/usuarios', label: 'Users', icon: Users },
       { href: '/painel/assinatura', label: 'Subscription', icon: CreditCard },

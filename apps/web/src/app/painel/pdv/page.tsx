@@ -255,6 +255,17 @@ export default function PdvPage() {
   const [payments, setPayments] = useState<PaymentLine[]>([]);
   const [saleError, setSaleError] = useState<string | null>(null);
   const [lastSale, setLastSale] = useState<Sale | null>(null);
+  const lastSaleStore = lastSale ? storesQuery.data?.find((store) => store.id === lastSale.storeId) : undefined;
+
+  // Only lastSale?.id triggers this — not receiptAutoPrint — so toggling the
+  // printer setting elsewhere never re-fires a print for a sale already on
+  // screen, only a genuinely new one.
+  useEffect(() => {
+    if (lastSale && lastSaleStore?.receiptAutoPrint) {
+      window.print();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastSale?.id]);
 
   // Restores the in-progress cart (if the reload happened in the middle of a
   // sale) exactly once, as soon as the tenant is known — only feeds in data
@@ -615,7 +626,8 @@ export default function PdvPage() {
               companyName={meQuery.data?.tenant.companyName ?? ''}
               displayName={meQuery.data?.tenant.displayName}
               logoUrl={logoUrl}
-              storeName={storesQuery.data?.find((store) => store.id === lastSale.storeId)?.name}
+              storeName={lastSaleStore?.name}
+              paperWidthMm={lastSaleStore?.receiptPaperWidthMm}
             />
           )}
 

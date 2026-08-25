@@ -14,7 +14,11 @@ interface SaleReceiptProps {
   displayName?: string | null;
   logoUrl?: string | null;
   storeName?: string;
+  /** 58 or 80 (mm) — the store's configured thermal roll width, see painel/impressoras. Defaults to 80mm (the previous hardcoded size) when not provided. */
+  paperWidthMm?: 58 | 80;
 }
+
+const MM_TO_PX = 96 / 25.4;
 
 // This element only exists to be printed (see .print-target in globals.css)
 // — never shows up on the normal PDV screen. Narrow layout (thermal receipt
@@ -23,11 +27,16 @@ interface SaleReceiptProps {
 // companyName is what fiscal text (NFC-e) below always uses — displayName
 // (nome fantasia) is presentation-only, shown here because a receipt is
 // customer-facing, not a legal document itself.
-export function SaleReceipt({ sale, companyName, displayName, logoUrl, storeName }: SaleReceiptProps) {
+export function SaleReceipt({ sale, companyName, displayName, logoUrl, storeName, paperWidthMm = 80 }: SaleReceiptProps) {
   const createdAt = new Date(sale.createdAt);
+  const widthPx = Math.round(paperWidthMm * MM_TO_PX);
 
   return (
-    <div className="print-target w-[300px] p-2 font-mono text-xs text-black">
+    <div className="print-target p-2 font-mono text-xs text-black" style={{ width: `${widthPx}px` }}>
+      {/* @page sizes the print dialog's page to the actual roll width — without
+          this the browser prints at its default page size (A4/Letter) regardless
+          of how narrow the receipt itself is laid out. */}
+      <style>{`@page { size: ${paperWidthMm}mm auto; margin: 0; }`}</style>
       <div className="text-center">
         {/* next/image can't optimize a blob: URL, see LogoMark. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
