@@ -19,8 +19,8 @@
     "db:migrate": "pnpm --filter @pcaarb/api db:migrate"
   },
   "devDependencies": {
-    "prettier": "^3.4.2",
-    "turbo": "^2.3.3",
+    "prettier": "^3.9.9",
+    "turbo": "^2.11.4",
     "typescript": "^5.7.2"
   }
 }
